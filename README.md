@@ -1,7 +1,7 @@
-# Expo white-label template
+# Maps Carburant FR
 
-iOS and Android starter using Expo SDK 58, Expo Router and native Expo UI.
-All builds open the Template page with a native dock and circular component menu. Tap its
+iOS and Android app using Expo SDK 58, Expo Router and native Expo UI.
+All builds retain the starter's Template page with a native dock and circular component menu. Tap its
 center action to browse components: swiping shows the page name and tapping an
 icon pushes its native example. Shared components and optional service/workflow
 helpers remain available for future features.
@@ -35,12 +35,17 @@ roles in [tokens.ts](src/constants/themes/tokens.ts), spacing/radii in
 [design.ts](src/constants/themes/design.ts). See
 [theme values](docs/appearance-themes.md#theme-values) for ownership and previewing.
 
-## Build your clone with EAS
+## Build with EAS
 
-Set `eas.owner` and `eas.projectId` in
-[config/brands/template.json](config/brands/template.json) to your EAS account
-and project UUID. Use the slug `hyrkul-wlui-template` to match this starter.
-You can clear the ID for local development without linking an EAS project.
+The app's EAS owner, project UUID, native IDs and assets live in
+[config/brands/template.json](config/brands/template.json). Verify its identity
+matches the selected EAS project before building. A blank project ID is supported
+only for local development. The internal brand selector remains `template`.
+
+Production uses `com.hyrkul.mapscarburantfr`; development uses
+`com.hyrkul.mapscarburantfr.dev`, and preview uses
+`com.hyrkul.mapscarburantfr.preview` on both platforms. Existing themes, languages,
+screens, navigation and artwork are retained.
 
 ```sh
 npx eas-cli@latest login

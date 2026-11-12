@@ -1,11 +1,11 @@
 # EAS builds
 
-## Link a clone
+## Project configuration
 
-Set `eas.owner` and `eas.projectId` in `config/brands/template.json` to the
-account and UUID of your EAS project. Use the slug `hyrkul-wlui-template` to
-match the starter. Production requires a project ID. Local development accepts
-an empty ID.
+The app is linked through `eas.owner` and `eas.projectId` in
+`config/brands/template.json`. Its slug is `expo-maps-template` and its project ID is
+`78e612d4-0ae1-44e3-a540-a7bf075b5fd0`. Production requires a project ID. Local
+development accepts an empty ID. The internal brand selector remains `template`.
 
 ```sh
 npm ci
@@ -29,7 +29,7 @@ for platform credentials.
 | `production`         | Store binaries with remote version increment          |
 
 All profiles use the brand manifest's `name` as the installed app name. The
-default brand displays `Expo Template`. Install a new native build to apply a
+default brand displays `Maps Carburant FR`. Install a new native build to apply a
 name change.
 
 ```sh
@@ -75,10 +75,10 @@ The app uses `expo-notifications` and Expo Push Service. Settings displays one
 selectable `[Expo] Push token` for testing. Android transport uses FCM underneath
 Expo, so the Google services files and FCM v1 sending credentials remain required.
 
-| Variant     | Android application ID          | Google services file               | Firebase project           |
-| ----------- | ------------------------------- | ---------------------------------- | -------------------------- |
-| Development | `com.hyrkul.mobiletemplate.dev` | `google-services.development.json` | `expo-template-dev-hyrkul` |
-| Production  | `com.hyrkul.mobiletemplate`     | `google-services.json`             | `expo-template-hyrkul`     |
+| Variant     | Android application ID           | Google services file               | Firebase project  |
+| ----------- | -------------------------------- | ---------------------------------- | ----------------- |
+| Development | `com.hyrkul.mapscarburantfr.dev` | `google-services.development.json` | `expo-g-maps`     |
+| Production  | `com.hyrkul.mapscarburantfr`     | `google-services.json`             | `expo-g-maps-dev` |
 
 In `config/brands/template.json`, `android.googleServicesFile` accepts one file
 path or a map by variant. Each file must contain a client matching the resolved
@@ -127,7 +127,7 @@ silent background work is not configured.
 
 ### Development topic through Expo
 
-Development Android installs subscribe to `all-testing-et` with Expo's
+Development Android installs subscribe to `all-testing-maps` with Expo's
 `subscribeToTopicAsync()` after notification permission is granted. The app tries
 after the startup permission request finishes, on returning to the foreground, and during Settings token
 registration. Topic work does not block launch or Expo token display; failures
@@ -135,7 +135,7 @@ are logged and the next registration/resume can retry. Production, preview and
 iOS do not subscribe, and existing installs join when they run the updated app.
 
 This is an FCM topic managed through the Expo Android API. Send topic messages
-from the development Firebase project (`expo-template-dev-hyrkul`) using Firebase
+from the development Firebase project (`expo-g-maps`) using Firebase
 Console or a trusted FCM sender. Expo Push Service and its test tool accept Expo
 token recipients rather than topic names. To broadcast through Expo Push Service
 across Android and iOS, a backend must retain the recipient Expo push tokens.

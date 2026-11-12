@@ -1,6 +1,6 @@
 {
-  "name": "hyrkul-template",
-  "version": "1.0.3",
+  "name": "maps-carburant-fr",
+  "version": "0.0.1",
   "private": true,
   "main": "expo-router/entry",
   "engines": {

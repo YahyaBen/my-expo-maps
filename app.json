@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Expo Template",
-    "slug": "expo-mobile-template",
-    "version": "1.0.4",
+    "name": "Maps Carburant FR",
+    "slug": "expo-maps-template",
+    "version": "0.0.1",
     "platforms": ["ios", "android"],
     "orientation": "default",
     "userInterfaceStyle": "automatic",

@@ -63,7 +63,7 @@ handler after launch without fetching a token. Settings reads a
 selectable Expo push token while visible after notification permission is granted.
 The app uses `expo-notifications` and Expo Push Service; Expo manages the native
 transport and device-token mapping. Development Android installs also join the
-`all-testing-et` topic through Expo's topic API after OS permission is granted, on
+`all-testing-maps` topic through Expo's topic API after OS permission is granted, on
 launch/resume and during Settings registration. The launch attempt waits for the
 permission request to finish. No custom messaging service, receiver or
 JavaScript background task is configured. Template loads Settings
