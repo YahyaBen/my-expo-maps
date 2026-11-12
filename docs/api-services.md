@@ -1,0 +1,161 @@
+# Backend repositories
+
+The starter retains the existing Axios client, response validation, auth lifecycle,
+secure session storage and TanStack Query integration. Set `EXPO_PUBLIC_API_URL`
+for the real server before consuming the optional auth kit's endpoints.
+No guest credentials or mocked production API responses are supplied.
+
+[`auth.repository.ts`](../src/services/auth/auth.repository.ts) exports the
+`AuthRepository` contract and its `authRepository` implementation. Its operations
+cover login, registration, registration confirmation/resend, Google sign-in,
+password recovery/reset, current identity and remote logout.
+`auth.queries.ts` calls `authRepository.getCurrentIdentity` for the identity query.
+Consumed responses are validated by `src/validation/schemas/api/auth.ts` through
+the existing HTTP client; request/form schemas retain their contracts.
+
+## Repository boundaries
+
+| Owner                  | Responsibility                                                   |
+| ---------------------- | ---------------------------------------------------------------- |
+| Feature workflow       | Drafts, device metadata, navigation and submission coordination  |
+| Query/mutation module  | Query keys, caching, invalidation and callback composition       |
+| Entity repository      | Typed remote operations through the shared validated HTTP client |
+| Auth lifecycle/session | Durable credentials, token rotation, ownership and local logout  |
+
+Keep repositories in `src/services/<entity>/<entity>.repository.ts`. Expose a small
+named object with an explicit feature-specific contract in the same file. The
+implementation uses existing request/response types and only the operations the
+backend actually supports. Replace the former endpoint module when migrating a
+feature, keeping one data-access owner.
+
+Queries call repository methods and forward their `AbortSignal`; workflows may
+call repository writes directly through the existing submission helper. Repository
+errors reject normally so existing query and form feedback can handle them.
+Repositories contain no React hooks, navigation, query-cache effects or native
+storage. They reuse `apiClient` for headers, auth interception and response
+validation; domain mapping stays with pure mapper functions when needed.
+
+Auth uses the existing unauthenticated client for public endpoints and captured-token
+revocation. Its repository never establishes or clears a local session. The raw
+refresh transport remains independent of the repository to avoid interceptor
+cycles. Localized error presentation lives in `auth.error-message.ts`.
+
+Recipe-specific entity services, feature adapters, DTOs and schemas are removed.
+Generic request normalization, pagination schemas, query factories, mutation
+callbacks, invalidation helpers and `createEntityKeys` remain for new backend
+features. Create only the layers required by an actual endpoint. Preserve abort
+signals, account ownership, session-generation checks and mandatory cache work
+when composing success navigation.
+
+Current-identity and entity-detail queries use `skipToken` until their required
+identifiers exist. Empty/whitespace identifiers and an empty detail identifier
+tuple cannot start a request through manual refetch. Normalize identifiers once
+for both the query key and the readiness check.
+
+`request-utils.ts` owns primitive parameter normalization and identifier paths.
+Its API types are imported as types only, so using these helpers does not load
+the HTTP client, secure session storage or initialized query cache.
+
+Repository modules have an enforced transport import boundary. Keep
+React/navigation and cache effects in consumers or query/mutation modules, and
+schemas/mappers free of rendering and I/O. The auth lifecycle, raw refresh, device
+metadata and session storage retain their existing owners. See
+[enforced boundaries](architecture.md#enforced-import-boundaries).
+
+See the [API implementation skill](../.agents/skills/expo-api-services/SKILL.md)
+and [architecture](architecture.md). No automated service runner is configured;
+use current package scripts and distinguish native/live-backend verification from
+static checks.
+
+## API configuration
+
+`config/api.js` owns URL validation/normalization and the default ten-second
+timeout. `src/services/api.config.ts` is the native transport entry point: it
+reads the statically referenced `process.env.EXPO_PUBLIC_API_URL` lazily and maps
+configuration failures to `ApiConfigurationError` with safe user feedback.
+
+Ordinary requests, explicit base URL overrides and raw token refresh use this
+same policy. Whitespace and trailing slashes are normalized; local HTTP addresses
+and ports remain supported. Credentials, query strings, fragments and non-HTTP
+protocols are rejected without including the supplied URL in diagnostics.
+
+Keep refresh interceptor-free. Do not import `api.ts` from `auth.refresh.ts` to
+reuse its authenticated client: the reverse dependency already exists and refresh
+must not recurse. Missing configuration does not prevent the public local starter
+from opening or building in any variant. Authentication needs a real API URL;
+when supplied in production, that URL must use HTTPS.
+See [environment selection](development.md#brand-and-environment-configuration).
+
+## Session model and logout
+
+Identity wire DTOs and response validation keep their existing fields, endpoints
+and backend `roles` in [api/auth.ts](../src/validation/schemas/api/auth.ts).
+[auth.mapper.ts](../src/services/auth/auth.mapper.ts) is a pure boundary for fresh
+tokens, legacy stored token responses and the canonical frontend storage format.
+The frontend [session schema](../src/validation/schemas/auth-session.ts) requires
+a nonempty access token and a user with a nonempty `uuid`. It no longer exposes
+unused role/chef flags. Older canonical records may retain null refresh-token or
+expiry metadata; non-null tokens, dates and display fields are validated.
+An older record without a refresh token cannot renew an expired/unknown access
+expiry and follows the existing sign-in-again policy when renewal is required.
+
+The `auth.session` storage key and legacy wire-token restoration remain supported.
+Old product-only user fields are stripped during normalization and disappear from
+disk on the next valid write. A missing/invalid user makes a stored record corrupt;
+it is removed before authentication. Failed deletion remains a recovery error.
+Invalid new sessions/profile updates are rejected before changing durable state;
+session establishment validates before reserving a new generation. It queues the
+credential write before clearing caches. All session reads await the existing
+storage queue and recheck their generation before returning even an in-memory
+session, so requests and refresh cannot borrow the departing account's credentials
+while the new account is being saved.
+
+`signOut` captures the departing access-token string and generation, checks
+ownership after the read, and awaits the existing serialized SecureStore deletion.
+Only durable deletion publishes sign-out and clears that generation's caches.
+Repeated logout/clear calls join the matching pending clear, including its temporary
+cleared generation. A deletion failure restores the matching local account for
+retry; a newer session wins over old completion or failure.
+
+After successful local cleanup, revocation runs in the background through
+`authClient` with explicit `Authorization`, no body and the shared ten-second
+timeout. This client has authentication attachment and refresh interception
+disabled. It cannot read a new account's token, rotate credentials, clear caches
+or publish session events. Its rejection is consumed without an old-account alert.
+The existing authenticated client continues to own normal identity reads.
+
+Remote revocation is best effort: offline operation, process termination or an
+expired/rejected access token can prevent it. The supplied contract exposes no
+refresh-token revocation endpoint/body, so the app does not invent one or refresh
+solely for logout. Local durable sign-out still completes. This is not proof of
+server-side invalidation; verify that behavior with the actual backend.
+
+Refresh remains on its raw transport and shares only API configuration. It keeps
+deduplication, generation checks and token-pair persistence, preserves cached
+identity during temporary failures, and discards consumed old credentials if
+rotation cannot be saved. Generation checks also classify superseded transport
+or persistence failures before cleanup. Keep its import independent of `api.ts`.
+
+On native iOS/Android with a real session, check the consuming app's logout while offline and
+with slow revocation, account switching, cached identity during temporary refresh
+failure, and recovery after a failed SecureStore deletion. The latter must retain
+the error and retry action. Isolated in-memory checks validate
+JavaScript ordering; they do not verify native storage, focus/navigation or server
+revocation. No service test runner or fake production session is introduced.
+
+## Error notifications
+
+Query and mutation cache failures and imperative auth lifecycle failures call
+`reportErrorAlert` from `src/lib/error-alerts.ts`. It preserves auth error
+translation and ignores cancellations and stale-session work. The shared
+`showAlert` queue coalesces duplicate notifications and retains them until the
+root `AlertHost` can present them after launch.
+
+Best-effort logout revocation is deliberately excluded after successful local
+cleanup. Local deletion failures still use the account mutation's ordinary
+inline error/retry and shared alert path.
+
+Feedback uses Expo UI's native iOS Alert and Android AlertDialog with an OK
+action. Alerts remain until dismissed; there is no timed toast overlay. Keep
+persistent failure context and retry controls on the affected screen. See the
+[alert skill](../.agents/skills/template-skill-ui-alert/SKILL.md) for native composition.

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "441653513752",
+    "project_id": "expo-template-hyrkul",
+    "storage_bucket": "expo-template-hyrkul.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:441653513752:android:ed3f7749e6b8ae8f6dbd6d",
+        "android_client_info": {
+          "package_name": "com.hyrkul.mobiletemplate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChc7vWK1tq6aMHbNNG00ay59BX1mGw27Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

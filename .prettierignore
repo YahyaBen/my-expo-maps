@@ -1,0 +1,16 @@
+node_modules/
+.expo/
+.git/
+.husky/_/
+android/
+ios/
+dist/
+public/
+assets/
+package-lock.json
+expo-env.d.ts
+google-services.json
+AGENTS.md
+Reference/
+.scannerwork/
+.sonarqube-local/

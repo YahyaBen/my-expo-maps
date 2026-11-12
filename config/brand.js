@@ -1,0 +1,172 @@
+const { statSync, readFileSync } = require('node:fs');
+const path = require('node:path');
+const { z } = require('zod');
+const { resolveApiBaseUrl } = require('./api');
+const assets = require('./brand-assets.json');
+
+const brands = {
+  template: require('./brands/template.json'),
+};
+const variants = ['development', 'preview', 'production'];
+const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+const asset = z.string().startsWith('./').min(3);
+const brandSchema = z.strictObject({
+  id: z.string().regex(/^[a-z][a-z0-9-]*$/),
+  name: z.string().trim().min(1),
+  slug: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
+  scheme: z.string().regex(/^[a-z][a-z0-9+.-]*$/),
+  icon: asset,
+  lightIcon: asset.optional(),
+  redIcon: asset.optional(),
+  presentation: z.strictObject({
+    palette: z.enum(['ux', 'system']),
+    launch: z.enum(['minimal', 'branded']),
+    headingFont: z.string().refine((id) => Object.hasOwn(assets.headingFonts, id)),
+    launchArtwork: z.string().refine((id) => Object.hasOwn(assets.launchArtworks, id)),
+  }),
+  ios: z.strictObject({
+    icon: asset.optional(),
+    bundleIdentifier: z.string().regex(/^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/),
+  }),
+  android: z.strictObject({
+    package: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)+$/),
+    icon: asset.optional(),
+    lightIconForeground: asset.optional(),
+    redIconForeground: asset.optional(),
+    googleServicesFile: z
+      .union([
+        asset,
+        z.strictObject({
+          development: asset.optional(),
+          preview: asset.optional(),
+          production: asset.optional(),
+        }),
+      ])
+      .optional(),
+    adaptiveIcon: z
+      .strictObject({
+        backgroundColor: color,
+        foregroundImage: asset,
+        backgroundImage: asset.optional(),
+        monochromeImage: asset.optional(),
+      })
+      .optional(),
+  }),
+  splash: z.strictObject({
+    image: asset,
+    backgroundColor: color,
+    darkBackgroundColor: color,
+  }),
+  eas: z
+    .strictObject({
+      owner: z
+        .string()
+        .regex(/^[a-zA-Z0-9_-]+$/)
+        .optional(),
+      projectId: z.uuid().or(z.literal('')),
+    })
+    .optional(),
+});
+const projectRoot = path.resolve(__dirname, '..');
+
+function requireAsset(file, field) {
+  const absolute = path.resolve(projectRoot, file);
+  const relative = path.relative(projectRoot, absolute);
+  if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`Brand asset ${field} must be inside the project.`);
+  }
+  try {
+    if (statSync(absolute).isFile()) return absolute;
+  } catch {
+    // Report the manifest field rather than exposing file contents.
+  }
+  throw new Error(`Missing brand asset ${field}: ${file}`);
+}
+
+/** Resolve a build-time brand without mutating manifests or environment variables. */
+function resolveBrand(env = process.env) {
+  const variant = env.APP_VARIANT?.trim() || 'development';
+  if (!variants.includes(variant)) {
+    throw new Error(`APP_VARIANT must be one of: ${variants.join(', ')}.`);
+  }
+  const selected = env.APP_BRAND?.trim();
+  const id = selected || 'template';
+  if (!Object.hasOwn(brands, id)) {
+    throw new Error(`Unknown APP_BRAND. Registered brands: ${Object.keys(brands).join(', ')}.`);
+  }
+  const parsed = brandSchema.safeParse(brands[id]);
+  if (!parsed.success) {
+    const fields = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
+    throw new Error(`Invalid brand manifest ${id}; check fields: ${fields}.`);
+  }
+  const brand = parsed.data;
+  if (brand.id !== id) throw new Error(`Brand manifest ID must match its registry key: ${id}.`);
+
+  // Apply variant IDs before validating package-specific integrations.
+  const identitySuffix = { development: '.dev', preview: '.preview', production: '' }[variant];
+  brand.ios.bundleIdentifier += identitySuffix;
+  brand.android.package += identitySuffix;
+  brand.scheme += identitySuffix;
+  if (typeof brand.android.googleServicesFile === 'object') {
+    brand.android.googleServicesFile = brand.android.googleServicesFile[variant];
+  }
+
+  requireAsset(brand.icon, 'icon');
+  if (brand.lightIcon) requireAsset(brand.lightIcon, 'lightIcon');
+  if (brand.redIcon) requireAsset(brand.redIcon, 'redIcon');
+  if (brand.ios.icon) {
+    const iconFile = brand.ios.icon.endsWith('.icon')
+      ? `${brand.ios.icon}/icon.json`
+      : brand.ios.icon;
+    requireAsset(iconFile, 'ios.icon');
+  }
+  if (brand.android.icon) requireAsset(brand.android.icon, 'android.icon');
+  if (brand.android.lightIconForeground) {
+    requireAsset(brand.android.lightIconForeground, 'android.lightIconForeground');
+  }
+  if (brand.android.redIconForeground) {
+    requireAsset(brand.android.redIconForeground, 'android.redIconForeground');
+  }
+  requireAsset(brand.splash.image, 'splash.image');
+  const headingFont = assets.headingFonts[brand.presentation.headingFont];
+  const launchArtwork = assets.launchArtworks[brand.presentation.launchArtwork];
+  if (headingFont.file) requireAsset(headingFont.file, 'presentation.headingFont');
+  requireAsset(launchArtwork.file, 'presentation.launchArtwork');
+  if (launchArtwork.darkFile) {
+    requireAsset(launchArtwork.darkFile, 'presentation.launchArtwork.darkFile');
+  }
+  for (const field of ['foregroundImage', 'backgroundImage', 'monochromeImage']) {
+    const image = brand.android.adaptiveIcon?.[field];
+    if (image) requireAsset(image, `android.adaptiveIcon.${field}`);
+  }
+  if (brand.android.googleServicesFile) {
+    const file = requireAsset(brand.android.googleServicesFile, 'android.googleServicesFile');
+    let google;
+    try {
+      google = JSON.parse(readFileSync(file, 'utf8'));
+    } catch {
+      throw new Error('Brand android.googleServicesFile must contain valid JSON.');
+    }
+    const matches =
+      Array.isArray(google?.client) &&
+      google.client.some(
+        (client) =>
+          client?.client_info?.android_client_info?.package_name === brand.android.package,
+      );
+    if (!matches) {
+      throw new Error('Brand Firebase configuration does not match android.package.');
+    }
+  }
+  if (variant === 'production' && !brand.eas?.projectId) {
+    throw new Error(`Set eas.projectId in config/brands/${id}.json before building production.`);
+  }
+  if (env.EXPO_PUBLIC_API_URL?.trim()) {
+    const apiBaseUrl = resolveApiBaseUrl(env.EXPO_PUBLIC_API_URL);
+    if (variant === 'production' && new URL(apiBaseUrl).protocol !== 'https:') {
+      throw new Error('Production requires an HTTPS EXPO_PUBLIC_API_URL.');
+    }
+  }
+  return { brand, variant };
+}
+
+module.exports = { resolveBrand };

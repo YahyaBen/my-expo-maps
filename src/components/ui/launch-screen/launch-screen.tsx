@@ -1,0 +1,238 @@
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemeColors } from '@/hooks/use-theme';
+import { screenInsets } from '@/lib/screen-insets';
+import { Column, RNHostView, Spacer } from '@expo/ui';
+import Constants from 'expo-constants';
+import { Image } from 'expo-image';
+import { version as expoVersion } from 'expo/package.json';
+import LottieView from 'lottie-react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { View, useWindowDimensions } from 'react-native';
+import Animated, {
+  Easing,
+  ReduceMotion,
+  cancelAnimation,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { scheduleOnRN } from 'react-native-worklets';
+
+import { getAppBrand } from '@/config/brand';
+import { navigationTheme } from '@/constants/navigation-theme';
+import { getBrandHeadingFont, getBrandLaunchArtwork } from '@/config/brand-assets';
+import { useLanguage } from '@/context/language.context';
+import { useAppActive, useAppReducedMotion, useMotionEnabled } from '@/hooks/use-motion-enabled';
+import { UniversalHost } from '../host/universal-host';
+import { LoadingScreen } from '../loading/loading-state';
+import { nativeFillSize } from '../native/native-fill-width';
+import { UniversalTextContent } from '../text/universal-text';
+import { LaunchWave, LAUNCH_WAVE_HEIGHT as WAVE_HEIGHT } from './launch-wave';
+
+type LaunchScreenProps = {
+  mode?: 'minimal' | 'branded';
+  exiting: boolean;
+  onReady?: () => void;
+  onExitComplete: () => void;
+};
+
+export function LaunchScreen({ mode = 'branded', ...props }: Readonly<LaunchScreenProps>) {
+  return mode === 'minimal' ? (
+    <MinimalLaunchScreen {...props} />
+  ) : (
+    <BrandedLaunchScreen {...props} />
+  );
+}
+
+function MinimalLaunchScreen({ exiting, onReady, onExitComplete }: Readonly<LaunchScreenProps>) {
+  const active = useAppActive();
+  const [laidOut, setLaidOut] = useState(false);
+  useEffect(() => {
+    if (exiting && laidOut && active) onExitComplete();
+  }, [exiting, laidOut, active, onExitComplete]);
+  return (
+    <View
+      testID="app-launch-minimal"
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      onLayout={() => {
+        setLaidOut(true);
+        onReady?.();
+      }}
+    >
+      <LoadingScreen />
+    </View>
+  );
+}
+
+function BrandedLaunchScreen({ exiting, onReady, onExitComplete }: Readonly<LaunchScreenProps>) {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
+  const brand = getAppBrand();
+  const version = Constants.expoConfig?.version;
+  const headingFont = getBrandHeadingFont(language, brand);
+  const scheme = useColorScheme();
+  const launchArtwork = getBrandLaunchArtwork(brand, scheme);
+  const colors = useThemeColors(scheme);
+  const reducedMotion = useAppReducedMotion();
+  const active = useAppActive();
+  const animate = useMotionEnabled();
+  const artwork = useRef<LottieView>(null);
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const artworkSize = Math.max(
+    0,
+    Math.min(
+      260,
+      width - insets.left - insets.right - 48,
+      height - insets.top - insets.bottom - 100,
+    ),
+  );
+  const offsetY = useSharedValue(0);
+  const remainingHold = useRef(2_000);
+  const [laidOut, setLaidOut] = useState(false);
+  const [holdComplete, setHoldComplete] = useState(false);
+  const completed = useRef(false);
+  const finish = useCallback(() => {
+    if (completed.current) return;
+    completed.current = true;
+    onExitComplete();
+  }, [onExitComplete]);
+
+  useEffect(() => {
+    if (animate) artwork.current?.play();
+    else artwork.current?.pause();
+  }, [animate, launchArtwork.source]);
+
+  useEffect(() => {
+    if (!laidOut || !active || holdComplete) return;
+
+    // Overlap the visible branded hold with page preparation; count foreground time only.
+    const startedAt = performance.now();
+    const hold = setTimeout(() => {
+      remainingHold.current = 0;
+      setHoldComplete(true);
+    }, remainingHold.current);
+    return () => {
+      clearTimeout(hold);
+      remainingHold.current = Math.max(0, remainingHold.current - (performance.now() - startedAt));
+    };
+  }, [laidOut, active, holdComplete]);
+
+  useEffect(() => {
+    if (!exiting || !active || !holdComplete) return;
+    if (reducedMotion) {
+      finish();
+      return;
+    }
+    const distance = height + WAVE_HEIGHT;
+    const remaining = Math.max(0, Math.min(1, 1 + offsetY.get() / distance));
+    offsetY.set(
+      withTiming(
+        -distance,
+        {
+          duration: 2_000 * remaining,
+          easing: Easing.bezier(0.77, 0, 0.175, 1),
+          reduceMotion: ReduceMotion.Never,
+        },
+        (finished) => {
+          if (finished) scheduleOnRN(finish);
+        },
+      ),
+    );
+    return () => cancelAnimation(offsetY);
+  }, [exiting, active, holdComplete, height, offsetY, finish, reducedMotion]);
+
+  const exitStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: offsetY.get() }],
+  }));
+
+  return (
+    <Animated.View
+      testID="app-brand-screen"
+      onLayout={() => {
+        setLaidOut(true);
+        onReady?.();
+      }}
+      accessible
+      accessibilityLabel={t('launch.loading', { brandName: brand.name })}
+      pointerEvents="auto"
+      style={[
+        {
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          left: 0,
+          height: height + WAVE_HEIGHT,
+        },
+        exitStyle,
+      ]}
+    >
+      <View
+        style={{
+          height,
+          ...screenInsets(insets),
+          backgroundColor:
+            colors.launchWaveBody ?? navigationTheme(scheme, colors).colors.background,
+        }}
+      >
+        <UniversalHost
+          colorScheme={scheme}
+          matchContents={false}
+          ignoreSafeArea="all"
+          style={{ flex: 1 }}
+        >
+          <Column
+            alignment="center"
+            spacing={16}
+            modifiers={nativeFillSize}
+            style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}
+          >
+            <Spacer flexible />
+            <RNHostView matchContents>
+              {launchArtwork.type === 'lottie' ? (
+                <LottieView
+                  ref={artwork}
+                  source={launchArtwork.source}
+                  autoPlay={animate}
+                  loop={animate}
+                  style={{ width: artworkSize, height: artworkSize }}
+                  testID="app-brand-artwork"
+                />
+              ) : (
+                <Image
+                  source={launchArtwork.source}
+                  contentFit="contain"
+                  style={{ width: artworkSize, height: artworkSize }}
+                  testID="app-brand-artwork"
+                  accessible={false}
+                />
+              )}
+            </RNHostView>
+            <UniversalTextContent
+              colorScheme={scheme}
+              textStyle={{ fontFamily: headingFont, fontSize: 28, fontWeight: '900' }}
+              testID="app-brand-name"
+            >
+              {brand.name}
+            </UniversalTextContent>
+            <Spacer flexible />
+            {version ? (
+              <UniversalTextContent
+                colorScheme={scheme}
+                variant="caption"
+                tone="muted"
+                textStyle={{ textAlign: 'center' }}
+                testID="app-brand-version"
+              >
+                {`${t('common.appVersion', { version })}\nExpo ${expoVersion}`}
+              </UniversalTextContent>
+            ) : null}
+          </Column>
+        </UniversalHost>
+      </View>
+      {colors.launchWaveBody === undefined ? null : <LaunchWave colorScheme={scheme} />}
+    </Animated.View>
+  );
+}

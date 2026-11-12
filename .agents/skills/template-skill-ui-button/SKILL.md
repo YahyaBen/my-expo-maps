@@ -1,0 +1,77 @@
+---
+name: template-skill-ui-button
+description: Compose native semantic buttons and maintain their Host, color and geometry contract.
+---
+
+# Buttons
+
+Import public buttons/types from `@components/ui`.
+Source: [button/](../../../src/components/ui/button/).
+Keep public `Button`, `ButtonContent`, `ButtonProps`, `ButtonContentProps` and
+`ButtonVariant`, with shared theme resolution, in `button.tsx`. Keep the private
+`NativeButton` renderer in `native-button.ios.tsx`, `native-button.android.tsx`
+and `native-button.d.ts`. Use distinct basenames so native module resolution
+always reaches the shared entry before selecting a renderer.
+
+## Choose the rendering boundary
+
+- `ButtonContent`: inside `PageScreen`, `AuthScreenFrame`,
+  an existing native Host, list/card native content or a native sheet.
+- `Button`: at an RN view/footer/overlay boundary; it owns one
+  `UniversalHost`. An `RNHostView` subtree is also an RN boundary.
+- For a group at an RN boundary, use one `UniversalHost` with content buttons.
+  `PageFrame` alone does not establish native content hosting.
+- Standalone explicit `colorScheme` reaches native appearance and descendant
+  project context. Content buttons inherit the owning project Host.
+  Raw native Host appearance alone does not update project React context.
+
+## Props and intent
+
+`variant` is required. Filled/prominent: `primary`, `success`, `warning`,
+`info`, `destructive`; outlined/bordered: `secondary`; text/plain:
+`tertiary`, `link`. `glass` uses iOS 26+ glass, older iOS automatic fallback
+and Android outlined styling. Destructive also sets the iOS role.
+
+Optional common props: `label`, native `children`, `onPress`, `disabled`,
+`accessibilityLabel`, `testID`, `fullWidth`, `color`, `contentColor`, `borderRadius`,
+`contentPadding`, `size`, `circular`. Standalone-only: `colorScheme`, `cornerRadii`.
+
+- Children replace the label when non-nullish. For icon/text content, use native
+  `Row`, `Icon`, `Text`; native Text can inherit the button foreground.
+  Shared Icon artwork inherits the resolved button foreground through React
+  context, with an explicit icon color taking precedence.
+  `UniversalTextContent` sets its own foreground, so check filled-button contrast.
+- With custom icon/photo children, supply translated `accessibilityLabel` to name
+  the native action on both platforms. A plain `label` is ignored with children.
+  Keep decorative artwork pointer-transparent so the native button owns taps.
+- There are no `style`, `modifiers`, `icon`, `loading`, `pending` or `href`
+  props. Navigation, confirmation, pending/error state and duplicate-submit
+  guards belong to the consumer. Disable unavailable actions with `disabled`.
+- Do not nest independent interactive controls inside a button.
+
+## Colors and geometry
+
+- `sm`, `md` and `lg` use 44, 48 and 56 pt/dp sizing targets. The default is
+  `md`. Native styles can add their own insets, and text can grow past the
+  minimum. Explicit `contentPadding` without a size keeps intrinsic sizing.
+- Use `circular` for icon-only actions with a translated `accessibilityLabel`.
+  The selected size determines the circle's geometry. It takes priority over
+  `fullWidth`, `borderRadius` and `contentPadding`. Standalone `cornerRadii`
+  take priority over the circle.
+- Defaults: primary/onPrimary; secondary/onSecondary; muted/muted tertiary;
+  tint/tint link; paired status colors; error/onError destructive;
+  surfaceVariant/text glass.
+- Supplying either color prop skips both semantic defaults. Supply a coherent
+  pair when overriding. iOS `color` is tint; Android uses filled-container
+  color or outlined/text foreground fallback. Native disabled feedback remains.
+- Omitted radius uses `design.shape.buttonRadius`, then native defaults.
+  Explicit radius/padding preserve zero. Standalone physical `cornerRadii`
+  overrides uniform radius; omitted corners are square and do not mirror in RTL.
+  Preserve the existing Host clip and square inner renderer.
+- `fullWidth` needs a parent with real width. Equal actions in a native Row
+  each need a `Column modifiers={nativeRowWeight}` and a full-width button.
+  Omit `fullWidth` for intrinsic sizing; keep existing per-axis Host sizing.
+
+Use the [button examples](../../../src/features/template/button-examples.tsx).
+Verify disabled activation, pending recovery, Host overrides, translated/custom
+labels, RTL and native edge taps after geometry changes.

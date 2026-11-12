@@ -1,0 +1,69 @@
+---
+name: template-skill-ui-table
+description: Compose bounded native tables with minimum column widths and consumer-owned row actions.
+---
+
+# Table
+
+Import `Table`, `TableActions` and their types from `@components/ui`.
+Source: [table/](../../../src/components/ui/table/).
+Both are content-only and require an existing native Host.
+
+## Data and layout
+
+- Supply `rows`, `columns`, stable `keyExtractor` and `emptyState`.
+- Columns have stable `id`, translated `header`, `renderCell`, optional numeric
+  `width` (144 points minimum by default) and logical start/center/end `align`.
+  Optional `renderHeader` supplies a native header control, such as sorting.
+- Width includes cell padding. Table fills its measured container, sharing spare
+  width equally across data columns. Selection, action and row inset widths stay
+  fixed. When minimum widths exceed the container, content scrolls horizontally.
+  Do not combine resolved cell widths with fill-width modifiers.
+- String/number cells and empty content receive themed text. Custom cells,
+  empty content and `toolbar` must contain native UI.
+- Pass a bounded dataset or one page; Table renders every row.
+- The consumer owns filters, counts, reset, query states, pagination and navigation.
+- Compact body/header/outline use the Host-resolved `tableSurface`, `tableHeader`,
+  `tableText` and `tableBorder` tokens. Preserve native control touch targets.
+
+## Selection
+
+Optional `selection` receives `selectedKeys`, `onSelectRow`, `onSelectAll`,
+translated `selectAllLabel` and `rowLabel`, and optional `disabled`.
+Callbacks receive the next boolean; select-all receives the current visible rows.
+The consumer owns keys, filtering and preservation of hidden selections.
+Header selection is checked only when every visible row is selected; an empty
+header is disabled. The native checkbox API is boolean, without a mixed state.
+Private platform adapters add spoken labels to the existing native Checkbox;
+iOS retains its native toggle appearance. Never draw replacement checkbox artwork.
+Selectors append `-select-all` and `-row-{key}-select` to the Table testID.
+
+## Row navigation
+
+Set `onRowPress` to make each data region one native `ListItem`. Supply a
+translated `rowAccessibilityLabel` for its destination. The consumer owns routing;
+keep cells passive and selection checkboxes/action menus outside the row button.
+Without `onRowPress`, rows retain their passive layout. Platform adapters reserve
+native ListItem insets in the header so fixed columns stay aligned. The existing
+`-row-{key}` selector belongs to the actual ListItem when navigation is enabled.
+
+The payment example opens `/table/[id]` with native Detail/History segments and
+status badges. Its history is a local demo snapshot, including status changes;
+Back returns to the table's retained search, sorting and selection.
+
+## Row actions
+
+Set `renderActions` and translated `actionsHeader`; action width defaults to 112.
+`TableActions` requires visible `label`, row-specific `accessibilityLabel`
+and actions with stable `id`, translated `label`, `onPress`, optional
+`disabled` and `destructive`.
+
+Consumers own confirmation, mutation and feedback. Empty action arrays disable
+the trigger; disabled items suppress callbacks. Preserve native iOS Menu/Button
+and Android DropdownMenu semantics. Keep separate interactive boundaries.
+
+Given a testID, Table derives `-scroll`, `-header`, `-row-{key}`,
+`-row-{key}-cell-{columnId}` and `-empty`. Actions derive `-action-{id}`.
+Check horizontal scrolling, RTL, large text, empty/filter reset, spoken row names
+and disabled menus with the
+[table examples](../../../src/features/template/table-examples.tsx).

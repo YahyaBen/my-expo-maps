@@ -1,0 +1,33 @@
+---
+name: template-skill-ui-auth
+description: Compose native authentication frames with shared hosting and keyboard layout.
+---
+
+# Authentication frames
+
+Import `AuthScreenFrame` from `@components/ui`.
+Source: [auth/](../../../src/components/ui/auth/).
+
+- The frame owns safe areas, keyboard layout, scrolling and one full-width
+  native Host. Compose native content controls inside it.
+- Content centers within `screenContentMaxWidth` (1024 points/dp).
+  Keep the frame and Host unpadded. `PageSection` supplies 16-point content
+  gutters plus device insets inside ordinary scrolling content. Preserve available
+  keyboard-adjusted minimum height: short forms center; long forms grow/scroll.
+- `topBar` stays outside the scrolling form and below the top safe area.
+- `grouped` uses native `FieldGroup`; supply sections directly and keep it out
+  of another vertical scroll container. The group owns gutters and transparent
+  system-canvas treatment; the frame reserves device safe areas with margins.
+- Resolve colors from the owning Host. Buttons require an explicit `variant`.
+  Validation, submission and session I/O belong to existing auth owners.
+- The wordmark uses uppercase `getAppBrand().name` and the secondary accent.
+  Title/description use themed heading/body presets. Use
+  `getBrandHeadingFont` with native Arabic/system fallbacks and root-loaded fonts.
+  Preserve `${testID}-brand` and `${testID}-title`.
+- Keep copy neutral across English, French and Arabic. Account logout retains
+  `auth-logout`, persistent `auth-logout-error` and retry on storage deletion
+  failure; background revocation must not keep local sign-out pending.
+
+Use the [auth example](../../../src/features/template/component-screen.tsx)
+for narrow/wide, overflow, grouped and Host-override examples. Verify keyboard
+reachability, draft retention, large text, RTL and sheet dismissal on devices.

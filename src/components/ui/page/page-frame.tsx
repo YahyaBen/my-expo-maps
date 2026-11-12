@@ -1,0 +1,128 @@
+import { usePageLayout } from '@/hooks/use-page-layout';
+import { navigationTheme } from '@/constants/navigation-theme';
+import { useThemeColors } from '@/hooks/use-theme';
+import { horizontalSafeAreaInset } from '@/lib/screen-insets';
+import { BlurTargetView } from 'expo-blur';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type PropsWithChildren,
+} from 'react';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
+import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useHostColorScheme } from '../host/universal-host';
+import { PageHeader } from './page-header';
+import { PageHeaderBackground } from './header-effects/page-header-background';
+import { PAGE_HEADER_MIN_HEIGHT } from './page-header-layout';
+import { PageHeaderTouchShield } from './header-effects/page-header-touch-shield';
+
+const PageHeaderInsetContext = createContext(0);
+
+export type PageHeaderMode = 'fixed' | 'scroll' | 'overlay';
+
+/** Put this inset inside scroll content so it can move beneath the floating header. */
+export function usePageHeaderInset() {
+  return useContext(PageHeaderInsetContext);
+}
+
+/** Owns header geometry and safe areas while keeping the native content tree stable. */
+export function PageFrame({
+  children,
+  title,
+  onBack,
+  colorScheme,
+  headerMode = 'fixed',
+  headerBlur = true,
+}: Readonly<
+  PropsWithChildren<{
+    title?: string;
+    onBack?: () => void;
+    colorScheme?: 'light' | 'dark';
+    /** Fixed reserves space; scroll publishes an inset; overlay retains device insets. */
+    headerMode?: PageHeaderMode;
+    /** Blur content behind titled headers by default. */
+    headerBlur?: boolean;
+  }>
+>) {
+  const scheme = useHostColorScheme(colorScheme);
+  const colors = useThemeColors(scheme);
+  const backgroundColor = navigationTheme(scheme, colors).colors.background;
+  const onLayout = usePageLayout();
+  const insets = useSafeAreaInsets();
+  const horizontalInset = horizontalSafeAreaInset(insets);
+  const [headerContentHeight, setHeaderContentHeight] = useState(PAGE_HEADER_MIN_HEIGHT);
+  const headerHeight = title ? insets.top + headerContentHeight : 0;
+  const mode = !title && headerMode === 'scroll' ? 'fixed' : headerMode;
+  const reservedTop = title ? headerHeight : insets.top;
+  const blurTarget = useRef<ViewInstance | null>(null);
+  const contentTop = mode === 'overlay' ? insets.top : 0;
+  const contentInsets = useMemo(
+    () => ({
+      top: contentTop,
+      bottom: insets.bottom,
+      left: horizontalInset,
+      right: horizontalInset,
+    }),
+    [contentTop, insets.bottom, horizontalInset],
+  );
+  return (
+    <View style={{ flex: 1, backgroundColor }} onLayout={onLayout}>
+      <SafeAreaInsetsContext.Provider value={contentInsets}>
+        <PageHeaderInsetContext.Provider value={mode === 'scroll' ? headerHeight : 0}>
+          {/* Keep the same capture target even when blur, title or layout mode changes. */}
+          <BlurTargetView ref={blurTarget} style={{ flex: 1 }}>
+            {/* Android captures target children, including the background of empty regions. */}
+            <View
+              testID="page-blur-scene-background"
+              pointerEvents="none"
+              accessible={false}
+              style={[StyleSheet.absoluteFill, { backgroundColor }]}
+            />
+            <View style={{ flex: 1, marginTop: mode === 'fixed' ? reservedTop : 0 }}>
+              {children}
+            </View>
+          </BlurTargetView>
+        </PageHeaderInsetContext.Provider>
+      </SafeAreaInsetsContext.Provider>
+      {/* Android blur mounts after its capture target. Title and Back stay above it. */}
+      {headerBlur && title ? (
+        <PageHeaderBackground
+          blurTarget={blurTarget}
+          colorScheme={colorScheme}
+          height={headerHeight}
+        />
+      ) : null}
+      <View
+        testID="page-header-safe-area"
+        pointerEvents={onBack ? 'box-none' : 'none'}
+        style={{
+          zIndex: 2,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          paddingTop: insets.top,
+          minHeight: title ? insets.top + PAGE_HEADER_MIN_HEIGHT : undefined,
+          paddingHorizontal: horizontalInset,
+        }}
+      >
+        {title ? (
+          <PageHeader
+            title={title}
+            onBack={onBack}
+            colorScheme={colorScheme}
+            onLayout={({ nativeEvent }) => {
+              // Measure the title alone: inset updates and layout events can arrive separately.
+              const contentHeight = nativeEvent.layout.height;
+              if (contentHeight >= PAGE_HEADER_MIN_HEIGHT) setHeaderContentHeight(contentHeight);
+            }}
+          />
+        ) : null}
+      </View>
+      <PageHeaderTouchShield height={headerHeight} />
+    </View>
+  );
+}

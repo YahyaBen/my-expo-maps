@@ -1,0 +1,65 @@
+{
+  "cli": {
+    "version": ">= 24.4.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "environment": "development",
+      "env": {
+        "APP_BRAND": "template",
+        "APP_VARIANT": "development"
+      },
+      "android": {
+        "gradleCommand": ":app:assembleDebug --max-workers=1 --no-parallel"
+      },
+      "ios": {
+        "image": "auto",
+        "simulator": true
+      },
+      "channel": "development"
+    },
+    "development-device": {
+      "extends": "development",
+      "ios": {
+        "simulator": false
+      },
+      "channel": "development-device"
+    },
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "ios": {
+        "image": "auto"
+      },
+      "env": {
+        "APP_BRAND": "template",
+        "APP_VARIANT": "preview"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "preview"
+    },
+    "production": {
+      "autoIncrement": true,
+      "environment": "production",
+      "android": {
+        "credentialsSource": "remote"
+      },
+      "ios": {
+        "image": "auto"
+      },
+      "env": {
+        "APP_BRAND": "template",
+        "APP_VARIANT": "production"
+      },
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

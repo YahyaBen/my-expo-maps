@@ -1,0 +1,109 @@
+import { apiClient, createApiClient } from '@/services/api';
+import {
+  authFlowResponseSchema,
+  tokenResponseSchema,
+  currentIdentityResponseSchema,
+  messageResponseSchema,
+} from '@/validation/schemas/api/auth';
+import type { ApiReadOptions } from '../request-utils';
+import { DEFAULT_API_TIMEOUT_MS } from '../api.config';
+import type {
+  AuthFlowResponse,
+  ConfirmRegistrationRequest,
+  CurrentIdentityResponse,
+  GoogleSignInRequest,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+  TokenResponse,
+} from '@/types/auth.types';
+
+const authClient = createApiClient({
+  includeAuth: false,
+  skipInterceptor: true,
+});
+
+/** Remote operations only; queries and session lifecycle remain with their owners. */
+export interface AuthRepository {
+  login(request: LoginRequest): Promise<AuthFlowResponse>;
+  register(request: RegisterRequest): Promise<AuthFlowResponse>;
+  confirmRegistration(request: ConfirmRegistrationRequest): Promise<AuthFlowResponse>;
+  resendRegistration(request: { email: string }): Promise<AuthFlowResponse>;
+  googleSignIn(request: GoogleSignInRequest): Promise<TokenResponse>;
+  forgotPassword(request: { email: string }): Promise<{ message: string }>;
+  resetPassword(request: ResetPasswordRequest): Promise<void>;
+  getCurrentIdentity(options?: ApiReadOptions): Promise<CurrentIdentityResponse>;
+  logout(accessToken: string): Promise<void>;
+}
+
+function login(request: LoginRequest): Promise<AuthFlowResponse> {
+  return authClient.post<AuthFlowResponse, LoginRequest>('/api/auth/login', request, {
+    responseSchema: authFlowResponseSchema,
+  });
+}
+
+function register(request: RegisterRequest): Promise<AuthFlowResponse> {
+  return authClient.post<AuthFlowResponse, RegisterRequest>('/api/auth/register', request, {
+    responseSchema: authFlowResponseSchema,
+  });
+}
+
+function confirmRegistration(request: ConfirmRegistrationRequest): Promise<AuthFlowResponse> {
+  return authClient.post<AuthFlowResponse, ConfirmRegistrationRequest>(
+    '/api/auth/register/confirm',
+    request,
+    { responseSchema: authFlowResponseSchema },
+  );
+}
+
+// The supplied contract names no DTOs for these inline request/response bodies.
+function resendRegistration(request: { email: string }): Promise<AuthFlowResponse> {
+  return authClient.post<AuthFlowResponse, typeof request>('/api/auth/register/resend', request, {
+    responseSchema: authFlowResponseSchema,
+  });
+}
+
+function googleSignIn(request: GoogleSignInRequest): Promise<TokenResponse> {
+  return authClient.post<TokenResponse, GoogleSignInRequest>('/api/auth/google', request, {
+    responseSchema: tokenResponseSchema,
+  });
+}
+
+function forgotPassword(request: { email: string }): Promise<{ message: string }> {
+  return authClient.post<{ message: string }, typeof request>(
+    '/api/auth/password/forgot',
+    request,
+    { responseSchema: messageResponseSchema },
+  );
+}
+
+async function resetPassword(request: ResetPasswordRequest): Promise<void> {
+  await authClient.post<void, ResetPasswordRequest>('/api/auth/password/reset', request);
+}
+
+function getCurrentIdentity(options: ApiReadOptions = {}): Promise<CurrentIdentityResponse> {
+  return apiClient.get<CurrentIdentityResponse>('/api/users/me', {
+    ...options,
+    responseSchema: currentIdentityResponseSchema,
+  });
+}
+
+/** Revoke only the captured session; no live credentials, refresh or cache effects. */
+async function logout(accessToken: string): Promise<void> {
+  await authClient.post<void>('/api/auth/logout', undefined, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    timeoutMs: DEFAULT_API_TIMEOUT_MS,
+  });
+}
+
+export const authRepository: AuthRepository = {
+  login,
+  register,
+  confirmRegistration,
+  resendRegistration,
+  googleSignIn,
+  forgotPassword,
+  resetPassword,
+  getCurrentIdentity,
+  logout,
+};

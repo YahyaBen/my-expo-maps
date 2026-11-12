@@ -1,0 +1,43 @@
+---
+name: template-skill-ui-verification-code-face
+description: Compose controlled numeric code entry with caller-owned validation and decorative face feedback.
+---
+
+# Verification code face
+
+Import `VerificationCodeFace` from `@components/ui` inside an existing Host.
+[Source](../../../src/components/ui/verification-code-face/verification-code-face.tsx)
+owns the shared six-slot OTP input, optional Reset and decorative Skia artwork.
+The parent owns the value, validation and labels.
+
+`VerificationCodeFaceProps` requires `value: string`, `onChangeText(value)` and
+`label`. Entry always uses six digits. Optional props are `status` (`default`,
+`success` or `error`), `helperText`, `resetLabel`, `faceSize` (default 96),
+`disabled`, `onComplete(code)` and `testID` (default `verification-code-face`).
+
+Pass a translated `resetLabel` to render the Reset button. It calls
+`onChangeText('')`; neither value changes from props nor Reset fire completion.
+The component performs no authentication, request or correctness check. Apply
+validation through `status`/`helperText`; a workflow may use `onComplete` to
+start remote verification.
+
+- Reuse `otp-bottom-sheet/otp-input.tsx` for entry and `verification-face.tsx`
+  for artwork. The sheet composes these same helpers without a second input.
+- Normalize Arabic, Persian and full-width digits to ASCII, strip pasted
+  separators and cap entry at six digits. `onChangeText` receives that code.
+- `onComplete` receives ASCII digits after a new complete six-digit change
+  event. It never fires from render, effects or externally supplied values.
+- Use one numeric field without mount autofocus. Blur on a complete numeric
+  entry; Reset clears and blurs. Disabled editing/Reset suppress callbacks.
+- Slot error colors and caller-provided helper text communicate success/error.
+- Hide decorative artwork from accessibility. Keep its RN bridge separate from
+  the native input/control tree.
+- Animate face progress/expression on the UI runtime and honor `useMotionEnabled`.
+- `faceSize` scales the 96-unit Skia drawing and its surrounding rotation space.
+  Keep artwork helpers in this family; child selectors derive from `testID`.
+
+Use the [verification-code example](../../../src/features/template/component-screen.tsx)
+to verify the controlled six-digit fixtures, supplied error/disabled states,
+completion counts, supported digit scripts, Reset, keyboard behavior, reduced
+motion, RTL and both appearances. The sample success code exists only in the
+fixture, never in the shared component.

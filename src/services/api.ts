@@ -1,0 +1,381 @@
+import {
+  clearAuthSession,
+  getAccessToken,
+  getSessionVersion,
+  assertSessionVersion,
+} from '@/services/auth/auth.session';
+import { isSessionInvalid, SessionChangedError } from '@/services/auth/auth.errors';
+import { ApiError, ApiResponseValidationError } from '@/services/api.error';
+import { DEFAULT_API_TIMEOUT_MS, getApiBaseUrl } from './api.config';
+import { requestNewToken } from '@/services/auth/auth.refresh';
+import i18n, { getCurrentLanguage } from '@/lib/i18n';
+import type { ApiErrorKind } from '@/types/api.types';
+import type { z } from 'zod';
+import {
+  create,
+  AxiosHeaders,
+  AxiosError,
+  isAxiosError,
+  isCancel,
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+
+export const HTTP_METHOD = {
+  DELETE: 'DELETE',
+  GET: 'GET',
+  PATCH: 'PATCH',
+  POST: 'POST',
+  PUT: 'PUT',
+} as const;
+type HttpMethod = (typeof HTTP_METHOD)[keyof typeof HTTP_METHOD];
+type QueryParamValue = boolean | number | string;
+type RetryableAxiosRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+  _authVersion?: number;
+  _authAccessToken?: string | null;
+};
+
+export type ApiQueryParams = Record<string, QueryParamValue | null | undefined>;
+
+export interface ApiRequestOptions<TBody = unknown, TResponse = unknown> {
+  baseUrl?: string;
+  body?: TBody;
+  headers?: Record<string, string>;
+  params?: ApiQueryParams;
+  timeoutMs?: number;
+  signal?: AbortSignal;
+  responseSchema?: z.ZodType<TResponse>;
+}
+
+export { ApiError } from '@/services/api.error';
+
+const STATUS_FALLBACKS: Record<number, string> = {
+  0: 'api.network',
+  400: 'api.invalidRequest',
+  401: 'auth.sessionExpired',
+  403: 'api.forbidden',
+  404: 'api.notFound',
+  409: 'api.conflict',
+  422: 'api.invalidData',
+  429: 'api.tooMany',
+  500: 'api.server',
+};
+
+function stringMessages(values: unknown[]) {
+  return values.map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean);
+}
+
+export function extractApiMessage(data: unknown): string | string[] | null {
+  if (!data || typeof data !== 'object') {
+    return null;
+  }
+
+  const record = data as Record<string, unknown>;
+  const message = record.message;
+
+  if (Array.isArray(message) && message.length > 0) {
+    const messages = stringMessages(message);
+    if (messages.length > 0) return messages;
+  }
+
+  if (typeof message === 'string' && message.trim().length > 0) {
+    return message.trim();
+  }
+
+  const validationErrors = record.errors;
+
+  if (validationErrors && typeof validationErrors === 'object') {
+    const messages = stringMessages(
+      Object.values(validationErrors as Record<string, unknown>).flatMap((value) =>
+        Array.isArray(value) ? value : [value],
+      ),
+    );
+
+    if (messages.length > 0) {
+      return messages;
+    }
+  }
+
+  if (typeof record.detail === 'string' && record.detail.trim().length > 0) {
+    return record.detail.trim();
+  }
+
+  if (typeof record.title === 'string' && record.title.trim().length > 0) {
+    return record.title.trim();
+  }
+
+  return null;
+}
+
+function getDisplayMessage(status: number, data: unknown) {
+  return (
+    extractApiMessage(data) ??
+    (STATUS_FALLBACKS[status]
+      ? i18n.t(STATUS_FALLBACKS[status])
+      : i18n.t('api.unexpected', { status }))
+  );
+}
+
+function axiosErrorKind(error: AxiosError): ApiErrorKind {
+  if (error.response) return 'http';
+  if (
+    error.code === 'ETIMEDOUT' ||
+    (error.code === 'ECONNABORTED' && /timeout|timed out/i.test(error.message))
+  )
+    return 'timeout';
+  if (
+    [
+      'ERR_BAD_OPTION_VALUE',
+      'ERR_BAD_OPTION',
+      'ERR_INVALID_URL',
+      'ERR_DEPRECATED',
+      'ERR_NOT_SUPPORT',
+    ].includes(error.code ?? '')
+  )
+    return 'configuration';
+  if (
+    [
+      'ERR_NETWORK',
+      'ECONNRESET',
+      'ECONNREFUSED',
+      'ENOTFOUND',
+      'EAI_AGAIN',
+      'ENETUNREACH',
+      'EHOSTUNREACH',
+      'EPIPE',
+    ].includes(error.code ?? '') ||
+    (!error.code && error.request)
+  )
+    return 'network';
+  return 'unexpected';
+}
+
+function axiosDisplayMessage(kind: ApiErrorKind, status: number, data: unknown) {
+  switch (kind) {
+    case 'http':
+      return getDisplayMessage(status, data);
+    case 'network':
+      return i18n.t('api.network');
+    case 'timeout':
+      return i18n.t('api.timeout');
+    default:
+      return i18n.t('auth.requestFailed');
+  }
+}
+
+function toApiError(error: unknown) {
+  if (
+    isCancel(error) ||
+    error instanceof SessionChangedError ||
+    (error instanceof Error && error.name === 'AbortError')
+  )
+    return error;
+  if (error instanceof ApiError) {
+    return error;
+  }
+
+  if (isAxiosError(error)) {
+    const status = error.response?.status ?? 0;
+    const data = error.response?.data ?? null;
+    const kind = axiosErrorKind(error);
+    const timeout = error.config?.timeout ?? DEFAULT_API_TIMEOUT_MS;
+    const message =
+      kind === 'timeout'
+        ? `API request timed out after ${timeout}ms`
+        : error.message || `API request failed with status ${status}`;
+    const displayMessage = axiosDisplayMessage(kind, status, data);
+    return new ApiError(message, status, data, displayMessage, kind);
+  }
+
+  return new ApiError(
+    error instanceof Error ? error.message : 'API request failed before receiving a response',
+    0,
+    null,
+    i18n.t('auth.requestFailed'),
+    'unexpected',
+  );
+}
+
+async function attachRequestMetadata(config: InternalAxiosRequestConfig, includeAuth: boolean) {
+  const headers = AxiosHeaders.from({
+    Accept: 'application/json',
+    'Accept-Language': getCurrentLanguage(),
+    ...(config.headers as Record<string, string> | undefined),
+  });
+
+  if (!headers.has('Content-Type') && !(config.data instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  if (!includeAuth) {
+    config.headers = headers;
+    return config;
+  }
+
+  const authConfig = config as RetryableAxiosRequestConfig;
+  authConfig._authVersion ??= getSessionVersion();
+  assertSessionVersion(authConfig._authVersion);
+  const accessToken = await getAccessToken();
+  assertSessionVersion(authConfig._authVersion);
+  authConfig._authAccessToken = accessToken;
+
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  } else {
+    headers.delete('Authorization');
+  }
+
+  config.headers = headers;
+  return config;
+}
+
+export function createAxiosInstance(
+  baseURL: string | undefined,
+  {
+    includeAuth = true,
+    skipInterceptor = false,
+  }: {
+    includeAuth?: boolean;
+    skipInterceptor?: boolean;
+  } = {},
+): AxiosInstance {
+  const instance = create({
+    timeout: DEFAULT_API_TIMEOUT_MS,
+    transitional: { clarifyTimeoutError: true },
+  });
+
+  instance.interceptors.request.use(async (config) => {
+    config.baseURL = getApiBaseUrl(config.baseURL ?? baseURL);
+    return attachRequestMetadata(config, includeAuth);
+  });
+
+  instance.interceptors.response.use(
+    (response) => {
+      const config = response.config as RetryableAxiosRequestConfig;
+      if (includeAuth && config._authVersion !== undefined) {
+        assertSessionVersion(config._authVersion);
+      }
+      return response;
+    },
+    async (error: unknown) => {
+      const axiosFailure = isAxiosError(error) ? error : undefined;
+      const originalConfig = axiosFailure?.config as RetryableAxiosRequestConfig | undefined;
+      const isUnauthorized = axiosFailure?.response?.status === 401;
+
+      // Late failures belong to the departing account just like late successes.
+      // Classify them before refresh or shared error feedback can affect a new login.
+      if (includeAuth && originalConfig?._authVersion !== undefined) {
+        assertSessionVersion(originalConfig._authVersion);
+      }
+
+      if (!skipInterceptor && includeAuth && isUnauthorized && originalConfig) {
+        try {
+          const version = originalConfig._authVersion;
+          // Only handle errors for requests belonging to the current session.
+          if (version === undefined) throw error;
+          assertSessionVersion(version);
+          if (isSessionInvalid(error)) {
+            await clearAuthSession(version);
+          } else if (!originalConfig._retry) {
+            originalConfig._retry = true;
+            const currentToken = await getAccessToken();
+            assertSessionVersion(version);
+            // A late 401 may refer to a token another request already rotated.
+            if (!currentToken || currentToken === originalConfig._authAccessToken) {
+              await requestNewToken(version);
+            }
+            assertSessionVersion(version);
+            return instance(originalConfig);
+          }
+        } catch (refreshError) {
+          throw toApiError(refreshError);
+        }
+      }
+
+      throw toApiError(error);
+    },
+  );
+
+  return instance;
+}
+
+async function requestData<TResponse, TBody = unknown>(
+  instance: AxiosInstance,
+  method: HttpMethod,
+  path: string,
+  options: ApiRequestOptions<TBody, TResponse> = {},
+) {
+  const response = await instance.request<TResponse>({
+    baseURL: options.baseUrl,
+    data: options.body,
+    headers: options.headers,
+    method,
+    params: options.params,
+    signal: options.signal,
+    timeout: options.timeoutMs ?? DEFAULT_API_TIMEOUT_MS,
+    url: path,
+  });
+
+  if (!options.responseSchema) return response.data;
+  const parsed = options.responseSchema.safeParse(response.data);
+  if (!parsed.success) throw new ApiResponseValidationError(response.status);
+  return parsed.data;
+}
+
+export function createApiClient({
+  baseUrl,
+  includeAuth = true,
+  skipInterceptor = false,
+}: {
+  baseUrl?: string;
+  includeAuth?: boolean;
+  skipInterceptor?: boolean;
+} = {}) {
+  let instance: AxiosInstance | undefined;
+  const getInstance = () => {
+    instance ??= createAxiosInstance(baseUrl, {
+      includeAuth,
+      skipInterceptor,
+    });
+    return instance;
+  };
+
+  return {
+    delete: <TResponse>(
+      path: string,
+      options?: Omit<ApiRequestOptions<unknown, TResponse>, 'body'>,
+    ) => requestData<TResponse>(getInstance(), 'DELETE', path, options),
+    get: <TResponse>(path: string, options?: Omit<ApiRequestOptions<unknown, TResponse>, 'body'>) =>
+      requestData<TResponse>(getInstance(), 'GET', path, options),
+    patch: <TResponse, TBody = unknown>(
+      path: string,
+      body?: TBody,
+      options?: Omit<ApiRequestOptions<TBody, TResponse>, 'body'>,
+    ) =>
+      requestData<TResponse, TBody>(getInstance(), 'PATCH', path, {
+        ...options,
+        body,
+      }),
+    post: <TResponse, TBody = unknown>(
+      path: string,
+      body?: TBody,
+      options?: Omit<ApiRequestOptions<TBody, TResponse>, 'body'>,
+    ) =>
+      requestData<TResponse, TBody>(getInstance(), 'POST', path, {
+        ...options,
+        body,
+      }),
+    put: <TResponse, TBody = unknown>(
+      path: string,
+      body?: TBody,
+      options?: Omit<ApiRequestOptions<TBody, TResponse>, 'body'>,
+    ) =>
+      requestData<TResponse, TBody>(getInstance(), 'PUT', path, {
+        ...options,
+        body,
+      }),
+  };
+}
+
+export const apiClient = createApiClient();
