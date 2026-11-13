@@ -24,14 +24,25 @@ appearance. The registry validates both files and imports them statically.
 A brand selects them with `presentation.launch: "branded"` and
 `presentation.launchArtwork: "et"`.
 
-The template image is an existing Expo placeholder. Replace it with client artwork
-before distribution. Native app/adaptive icons and the native splash are separate
-manifest fields; changing in-app artwork does not update those assets.
+The Maps Carburant FR app icons use a fuel pump inside a map pin. The 1024×1024
+PNG artwork in `assets/AppIcon-{Dark,Light,Red}.icon/Assets/icon.png` also supplies
+the Settings picker previews. Native app/adaptive icons and the native splash are
+separate manifest fields; changing in-app artwork does not update those assets.
 
 The App Icon picker offers Dark, Light and Red. The brand manifest registers
 alternate artwork and padded Android foregrounds; `app.config.js` declares the
-Light and Red native resources through `expo-awesome-app-icon`. Red uses the same
-metallic design with a ruby/crimson palette in `assets/AppIcon-Red.icon/`.
+Light and Red native resources through `expo-awesome-app-icon`. All three use the
+same EU Reflex Blue (`#003399`) map pin with a white fuel pump. The French flag
+fills only the pump's upper display, using equal vertical blue, white and red
+bands; the small bottom detail is gray. The flag's reference palette is Bleu
+France (`#000091`), white (`#FFFFFF`) and Rouge Marianne (`#E1000F`) from the
+[French state graphic charter](https://www.culture.gouv.fr/Media/medias-creation-rapide/charte_graphique_de_letat.pdf).
+The marker's blue follows the [EU emblem color specification](https://eur-lex.europa.eu/eli/reg_impl/2022/129/2024-01-29/eng).
+Dark uses a midnight navy background, Light uses pure white, and Red uses a
+shaded deep red. Android foreground PNGs contain only the emblem on transparency,
+padded to keep the visible mark inside the central safe area. Each choice's
+background color is declared in the brand manifest; the alternate colors flow
+through `lightIconBackgroundColor` and `redIconBackgroundColor`.
 The picker only enables choices bundled into the installed native build.
 Apply switches the native launcher icon immediately and checks the installed icon
 before marking it current. An older pending Android selection can be reapplied or

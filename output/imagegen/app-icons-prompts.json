@@ -1,0 +1,37 @@
+{
+  "mode": "built-in image_gen",
+  "assetType": "Maps Carburant FR launcher icons",
+  "palette": {
+    "markerEUBlue": "#003399",
+    "flagBleuFrance": "#000091",
+    "flagWhite": "#FFFFFF",
+    "flagRougeMarianne": "#E1000F",
+    "pump": "#FFFFFF",
+    "bottomDetail": "#737B86"
+  },
+  "colorReferences": {
+    "eu": "https://eur-lex.europa.eu/eli/reg_impl/2022/129/2024-01-29/eng",
+    "frenchState": "https://www.culture.gouv.fr/Media/medias-creation-rapide/charte_graphique_de_letat.pdf"
+  },
+  "exports": {
+    "size": 1024,
+    "adaptiveCanvasSize": 1024,
+    "adaptiveSourceSize": 768,
+    "adaptiveInset": 128
+  },
+  "assets": {
+    "dark": "assets/AppIcon-Dark.icon/Assets/icon.png",
+    "light": "assets/AppIcon-Light.icon/Assets/icon.png",
+    "red": "assets/AppIcon-Red.icon/Assets/icon.png",
+    "adaptive": [
+      "assets/adaptive-foreground-dark.png",
+      "assets/adaptive-foreground-light.png",
+      "assets/adaptive-foreground-red.png"
+    ]
+  },
+  "displayPlacement": "Use case: precise-object-edit. Edit target: the user's attached hand-annotated fuel-pump map-pin app icon. The hand-drawn scribbles are INSTRUCTIONS, not artwork to preserve. Produce a polished clean version of exactly this same icon design. Preserve the complete map-pin silhouette, fuel pump body, hose and nozzle shape, display window shape, small bottom pill shape, exact placement, scale, proportions, frontal view and subtle satin depth. Make precisely these color changes: (1) Replace the whole vivid electric-blue MAP PIN with ONE uninterrupted deep desaturated SLATE BLUE #354D6A, with subtle satin highlight only, an elegant neutral blue that complements a French tricolor; NO split colors, NO tricolor on the pin. (2) INSIDE THE PUMP'S UPPER RECTANGULAR DISPLAY WINDOW, replace its dark fill and all scribbles with a crisp flat French flag: THREE EQUAL vertical bands, left official Bleu France #000091, middle pure white #FFFFFF, right official Rouge Marianne #E1000F. The flag fills the entire existing rounded-rectangle display window, clipped neatly to that window's rounded corners. Colors inside flag are uniform flat exact RGB colors, not gradients, not orange red, no reflections across the flag. Flag is ONLY inside that display. (3) Change the small bottom pill on pump from red to neutral cool gray #737B86. (4) Keep pump body, base and complete hose/nozzle WHITE, nozzle interior dark slate. Background: pure opaque white #FFFFFF full bleed to all four square corners. Remove all hand-drawn scribbles and stray marks including the tiny red dot below the emblem. No new shapes, text, border, rounded-square frame, separate flag, shadows outside pin, watermark or mockup. ONE clean finished square 1024x1024 production app icon. The result must clearly show a slate-blue map pin containing a white petrol pump with the French flag inside its display.",
+  "light": "Use case: precise-object-edit. Edit target: supplied Maps Carburant FR light icon, containing a slate-blue map pin, white fuel pump with French flag inside its display, and gray small bottom pill. User requests the MAP MARKER use European Union blue. Change ONLY the complete outer MAP PIN's slate-blue material to EU Reflex Blue, RGB 0,51,153, hexadecimal #003399. The pin must be ONE coherent blue color with extremely subtle satin highlight and darker-blue edge shading, no cyan, no purple, no multicolored division, no other pattern. Preserve exactly the white pump, white hose/nozzle, gray bottom pill #737B86, and the French flag INSIDE THE PUMP DISPLAY: equal vertical flat bands of Bleu France #000091, WHITE #FFFFFF, Rouge Marianne #E1000F left-to-right. The flag stays only in the pump's upper rounded rectangular display window, with flat saturated colors and NO shading or reflections across it. Keep pump/flag geometry, complete pin shape, size, proportions, center, margins and pure white full-bleed outer background EXACTLY unchanged. No EU stars or extra shapes, no text, no external drop shadow, no rounded square frame, no border, mockup or watermark. One finished square opaque mobile launcher icon.",
+  "dark": "Use case: precise-object-edit. Edit target: supplied LIGHT Maps Carburant FR icon with EU-blue map pin and French flag in the white pump display. Make its DARK variant by changing ONLY the full-bleed OUTSIDE BACKGROUND from white to solid midnight navy #0B1220. Keep the complete map marker EU Reflex Blue #003399 with the same very subtle satin shading. Keep white pump and hose, gray #737B86 bottom pill, and flag ONLY inside the pump's upper rounded rectangular display, three equal flat vertical bands Bleu France #000091, white #FFFFFF, Rouge Marianne #E1000F, from left to right. Preserve exact shapes, size, center, margins, geometry and colors of every part of emblem. No split colors on pin, no stars, new shapes, labels, text, external shadows, frame, rounded square corners, watermark or mockup. One square opaque full-bleed launcher icon.",
+  "red": "Use case: precise-object-edit. Edit target: supplied LIGHT Maps Carburant FR icon with EU-blue map pin and French flag in the white pump display. Make its RED-BACKGROUND variant by changing ONLY the full-bleed OUTSIDE BACKGROUND from white to solid deep shaded red #2B0A12. Keep the complete map marker EU Reflex Blue #003399 with identical subtle satin shading. Keep white pump and white hose, gray #737B86 bottom pill, and flag ONLY inside the pump's upper rounded rectangular display, three equal flat vertical bands Bleu France #000091, white #FFFFFF, Rouge Marianne #E1000F, from left to right. Preserve exact shape, size, center, margins, geometry and colors of every part of emblem. The pin stays entirely BLUE, never red or split colors. No stars, new shapes, labels, text, external shadows, frame, rounded square corners, watermark or mockup. One square opaque full-bleed launcher icon.",
+  "foreground": "Use case: background-extraction. Edit target: supplied LIGHT Maps Carburant FR icon. Remove ONLY the pure-white OUTSIDE BACKGROUND around the complete blue map marker and make it genuine fully transparent alpha. Keep every part INSIDE the map marker opaque and exactly unchanged: EU Reflex Blue #003399 filled pin with subtle satin shading, white pump and white hose/nozzle, gray #737B86 bottom pill, and French flag ONLY inside pump display with equal vertical bands #000091 / #FFFFFF / #E1000F left to right. The WHITE pump body, white hose and WHITE middle flag band must REMAIN fully OPAQUE WHITE. The nozzle interior stays opaque blue. Preserve the square canvas, exact emblem size, shape, center, original margins and geometry. Smooth crisp continuous antialiased outline with ZERO stray speckles or detached pixels, no halo or exterior shadow. No checkerboard drawn in, no other colors or stars, no text or extra elements. One transparent square PNG layer for Android adaptive icons."
+}

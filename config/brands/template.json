@@ -24,10 +24,12 @@
     },
     "adaptiveIcon": {
       "foregroundImage": "./assets/adaptive-foreground-dark.png",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0B1220"
     },
     "lightIconForeground": "./assets/adaptive-foreground-light.png",
-    "redIconForeground": "./assets/adaptive-foreground-red.png"
+    "lightIconBackgroundColor": "#FFFFFF",
+    "redIconForeground": "./assets/adaptive-foreground-red.png",
+    "redIconBackgroundColor": "#2B0A12"
   },
   "splash": {
     "image": "./assets/AppIcon-Dark.icon/Assets/icon.png",

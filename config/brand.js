@@ -32,7 +32,9 @@ const brandSchema = z.strictObject({
     package: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)+$/),
     icon: asset.optional(),
     lightIconForeground: asset.optional(),
+    lightIconBackgroundColor: color.optional(),
     redIconForeground: asset.optional(),
+    redIconBackgroundColor: color.optional(),
     googleServicesFile: z
       .union([
         asset,

@@ -63,7 +63,9 @@ module.exports = ({ config }) => {
                           android: {
                             image: brand.lightIcon,
                             foregroundImage: brand.android.lightIconForeground,
-                            backgroundColor: brand.android.adaptiveIcon?.backgroundColor,
+                            backgroundColor:
+                              brand.android.lightIconBackgroundColor ??
+                              brand.android.adaptiveIcon?.backgroundColor,
                           },
                         },
                       }
@@ -75,7 +77,9 @@ module.exports = ({ config }) => {
                           android: {
                             image: brand.redIcon,
                             foregroundImage: brand.android.redIconForeground,
-                            backgroundColor: brand.android.adaptiveIcon?.backgroundColor,
+                            backgroundColor:
+                              brand.android.redIconBackgroundColor ??
+                              brand.android.adaptiveIcon?.backgroundColor,
                           },
                         },
                       }
