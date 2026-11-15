@@ -70,26 +70,19 @@ Android uses the published `expo-blur` defaults for tint, intensity and reductio
 factor. iOS ultra-thin system materials retain their native color treatment. See the
 [page contract](../.agents/skills/template-skill-ui-page/references/page-guide.md) for the
 shared blur policy and capture-background requirements.
-Page titles and Home branding use the configured font and theme foreground.
+Page titles use the configured font and theme foreground.
 
-Use the app's component pages to inspect text, surfaces, spacing, buttons and field
+Use consuming app screens to inspect text, surfaces, spacing, buttons and field
 feedback. Native font scaling, RTL, rendered contrast and keyboard behavior require
 verification on matching iOS and Android builds.
 
-Template's Settings tab offers system/light/dark appearance, Reduce Motion,
+The map's Settings action opens system/light/dark appearance, Reduce Motion,
 language, device permissions, haptic feedback, device location and app version
 using the root's saved preferences; the app has no account screen.
 
-**Settings > Appearance > Auto-hide tab bar** enables or disables the
-[Twitter-inspired dock](https://reactiive.io/demos/twitter-tab-bar). It is on by
-default and saved for the next launch. Swipe up on tab content to hide the dock,
-then down to reveal it; the behavior follows the finger rather than scroll
-momentum on Android. iOS 18+ follows native scrolling; earlier iOS keeps the dock
-visible. Settings, Reduce Motion, screen readers, an open keyboard and the
-component menu keep navigation visible. Tab changes and returning from another
-screen also restore it. Native scrolling and horizontal carousels retain their
-existing owners. Verify gesture coexistence and hide/reveal on iOS and Android;
-static checks do not establish native touch behavior.
+The tab dock, its auto-hide control and the App Icon page are removed. Returning
+from Settings preserves the map's camera and mode. Shared navigation components
+remain available for future features.
 
 ## Theme values
 
@@ -109,8 +102,8 @@ a particular purpose. Derived component colors follow those semantic roles.
 Run npm run check after edits; there is no generation command or generated theme
 file to maintain.
 
-Use **Components/Theme Tokens/Playground** to inspect colors, typography,
-spacing, surfaces and control states in both appearances. Check affected native
+Inspect colors, typography, spacing, surfaces and control states in both
+appearances in the affected native screens. Check affected native
 screens with RTL and large text on iOS and Android. Font loading, language fallback,
 explicit overrides and native control behavior remain with their existing owners.
 
@@ -123,11 +116,14 @@ capability requests OS approval when needed. **Device settings** manages system
 grants; turning notifications off opens that same screen. Permission state
 refreshes automatically on return.
 
-Photos use the system picker without full-library access. The camera example
-captures still photos; microphone permission is available for video audio.
+The shared photo picker uses the system picker without full-library access.
+The template camera example is removed; permission controls remain available.
 Background location and exact-alarm access are unused. After the launch screen closes,
-the app requests notification permission if no choice has been made yet. Previous
-grants or denials do not trigger another startup prompt or open device settings.
+the app checks notification permission and repeats the check after each return from
+the background. Missing permission is requested through the native system dialog
+when the OS allows another prompt. Granted or blocked permission shows no prompt;
+no custom reminder or automatic settings redirect is shown. Blocked permission can
+still be managed through the existing Settings controls.
 Notification setup creates the Android channel before requesting permission. Android Settings displays the
 Expo push token after permission is granted, with selection/copy and retry.
 Sending through Expo needs matching platform credentials in EAS; see the

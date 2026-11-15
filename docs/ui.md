@@ -38,12 +38,12 @@ impact and notification feedback from [Expo Haptics](https://docs.expo.dev/versi
 Selection uses the broadly supported Android clock tick. Outcome constants require
 API 30; older Android versions use context-click and long-press fallbacks. Check
 constant API levels against the installed native implementation before changing effects.
-Compare haptic effects on physical devices through the app's Haptics component page.
+Compare haptic effects on physical devices in a consuming native screen.
 
 ## Previews and SDK upgrades
 
-Native demonstration compositions live in `src/features/template/`. Shared UI
-receives data and callbacks without importing feature examples.
+The app has Map and Settings screens; the component demonstration pages have been
+removed. Shared UI receives data and callbacks without importing features.
 
 For an SDK or Expo UI upgrade:
 

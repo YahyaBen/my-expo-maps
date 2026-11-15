@@ -1,1 +1,1 @@
-export { default } from '@/features/template/template-screen';
+export { default } from '@/features/map/map-screen';

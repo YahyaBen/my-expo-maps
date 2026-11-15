@@ -1,8 +1,10 @@
 const { resolveBrand } = require('./config/brand');
 const assets = require('./config/brand-assets.json');
+const { build: buildProfiles } = require('./eas.json');
 
 module.exports = ({ config }) => {
   const { brand, variant } = resolveBrand();
+  const updateChannel = buildProfiles[process.env.EAS_BUILD_PROFILE]?.channel ?? variant;
   const headingFont = assets.headingFonts[brand.presentation.headingFont];
   const androidGoogleMapsApiKey = process.env.GOOGLE_MAPS_ANDROID_API_KEY?.trim();
   const iosGoogleMapsApiKey = process.env.GOOGLE_MAPS_IOS_API_KEY?.trim();
@@ -17,6 +19,10 @@ module.exports = ({ config }) => {
     updates: {
       ...config.updates,
       url: brand.eas?.projectId ? `https://u.expo.dev/${brand.eas.projectId}` : undefined,
+      requestHeaders: {
+        ...config.updates?.requestHeaders,
+        'expo-channel-name': updateChannel,
+      },
     },
     ios: {
       ...config.ios,

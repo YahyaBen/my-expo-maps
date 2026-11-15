@@ -28,6 +28,6 @@ Source: [auth/](../../../src/components/ui/auth/).
   `auth-logout`, persistent `auth-logout-error` and retry on storage deletion
   failure; background revocation must not keep local sign-out pending.
 
-Use the [auth example](../../../src/features/template/component-screen.tsx)
-for narrow/wide, overflow, grouped and Host-override examples. Verify keyboard
+Use a consuming native screen for narrow/wide, overflow, grouped and Host-override
+checks. Verify keyboard
 reachability, draft retention, large text, RTL and sheet dismissal on devices.

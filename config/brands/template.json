@@ -9,6 +9,7 @@
   "presentation": {
     "palette": "ux",
     "launch": "branded",
+    "launchTitle": "carbufrance",
     "headingFont": "system",
     "launchArtwork": "et"
   },

@@ -1,14 +1,14 @@
 import { AlertHost, AppearanceTransition, LaunchScreen } from '@components/ui';
 import { useFonts } from 'expo-font';
-import { Stack, ThemeProvider, useRootNavigationState } from 'expo-router';
+import { Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Appearance, Platform } from 'react-native';
+import { Appearance, AppState, Platform } from 'react-native';
 import { getAppBrand } from '@/config/brand';
 import { getBrandFonts } from '@/config/brand-assets';
 import { navigationTheme } from '@/constants/navigation-theme';
-import { stackMotionOptions, stackRouteDepth } from '@/constants/navigation-motion';
+import { stackMotionOptions } from '@/constants/navigation-motion';
 import { LanguageProvider, useLanguage } from '@/context/language.context';
 import { LayoutDirectionProvider, useLayoutDirection } from '@/context/layout-direction.context';
 import { PerformanceReadyContext } from '@/context/performance-ready.context';
@@ -93,27 +93,54 @@ function RootLayoutContent({ fontsReady }: Readonly<{ fontsReady: boolean }>) {
   }, [interactive]);
 
   useEffect(() => {
-    if (!interactive || !active) return;
+    if (!interactive) return;
     let disposed = false;
-    void import('@/lib/device-permissions')
-      .then(async ({ requestStartupNotificationPermission }) => {
-        if (disposed) return;
-        await requestStartupNotificationPermission();
+    let checking = false;
+    let entered = false;
+    let backgrounded = false;
+
+    async function checkNotificationPermission() {
+      if (disposed || checking || AppState.currentState !== 'active') return;
+      checking = true;
+      entered = true;
+      try {
+        const { requestNotificationPermissionOnEntry } = await import('@/lib/device-permissions');
+        if (disposed || AppState.currentState !== 'active') return;
+        const permission = await requestNotificationPermissionOnEntry();
         if (
           disposed ||
+          !permission.granted ||
           Platform.OS !== 'android' ||
-          !brand.pushNotifications ||
-          brand.variant !== 'development'
+          !brand.pushNotifications
         )
           return;
-        const { subscribeToDevelopmentPushTopic } = await import('@/lib/push-notifications');
-        if (!disposed) return subscribeToDevelopmentPushTopic();
-      })
-      .catch(() => console.warn('[Notifications] Could not complete notification startup setup.'));
+        const { subscribeToPushTopic } = await import('@/lib/push-notifications');
+        if (!disposed && AppState.currentState === 'active') {
+          // Connectivity must not hold the permission check open across app entries.
+          void subscribeToPushTopic().catch(() => {
+            console.warn('[Notifications] Could not join the all-testing-maps topic.');
+          });
+        }
+      } catch {
+        console.warn('[Notifications] Could not complete notification permission setup.');
+      } finally {
+        checking = false;
+      }
+    }
+
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'background') backgrounded = true;
+      // Closing a system dialog alone is not another app entry.
+      if (state !== 'active' || (entered && !backgrounded)) return;
+      backgrounded = false;
+      void checkNotificationPermission();
+    });
+    void checkNotificationPermission();
     return () => {
       disposed = true;
+      subscription.remove();
     };
-  }, [interactive, active]);
+  }, [interactive]);
 
   useEffect(() => {
     if (appearanceReady)
@@ -163,7 +190,6 @@ function AppNavigator({ ready }: Readonly<{ ready: boolean }>) {
   const { colors } = useAppTheme(colorScheme);
   const direction = useLayoutDirection();
   const reducedMotion = useAppReducedMotion();
-  const navigationState = useRootNavigationState();
   const theme = useMemo(() => navigationTheme(colorScheme, colors), [colorScheme, colors]);
   if (!ready) return null;
   return (
@@ -171,32 +197,14 @@ function AppNavigator({ ready }: Readonly<{ ready: boolean }>) {
       <Stack
         // Keep the previous scene laid out for Back; hide deeper scenes on iOS and Android.
         activityEnabled
-        screenOptions={({ route }) => {
-          const depth = stackRouteDepth(navigationState, route.key) ?? 0;
-          const buttonModal =
-            route.name === 'components/[id]' &&
-            route.params != null &&
-            'id' in route.params &&
-            route.params.id === 'button';
-          const fromBottom = depth >= 2 || buttonModal;
-          return {
-            ...stackMotionOptions(reducedMotion, direction, fromBottom),
-            // Keep Android page scrolling outside a draggable form-sheet container.
-            presentation: buttonModal
-              ? Platform.OS === 'ios'
-                ? 'pageSheet'
-                : 'fullScreenModal'
-              : 'card',
-            contentStyle: { backgroundColor: theme.colors.background, direction },
-            headerShown: false,
-          };
+        screenOptions={{
+          ...stackMotionOptions(reducedMotion, direction),
+          contentStyle: { backgroundColor: theme.colors.background, direction },
+          headerShown: false,
         }}
       >
         <Stack.Screen name="index" />
-        <Stack.Screen name="components/[id]" />
-        <Stack.Screen name="components/category/[id]" />
-        <Stack.Screen name="settings/app-icon" />
-        <Stack.Screen name="table/[id]" />
+        <Stack.Screen name="settings/index" />
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

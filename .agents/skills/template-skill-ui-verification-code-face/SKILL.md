@@ -36,8 +36,8 @@ start remote verification.
 - `faceSize` scales the 96-unit Skia drawing and its surrounding rotation space.
   Keep artwork helpers in this family; child selectors derive from `testID`.
 
-Use the [verification-code example](../../../src/features/template/component-screen.tsx)
-to verify the controlled six-digit fixtures, supplied error/disabled states,
+Use a consuming native screen to verify controlled six-digit values,
+supplied error/disabled states,
 completion counts, supported digit scripts, Reset, keyboard behavior, reduced
 motion, RTL and both appearances. The sample success code exists only in the
 fixture, never in the shared component.

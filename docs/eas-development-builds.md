@@ -44,6 +44,11 @@ limits Gradle to one worker with parallel execution disabled. Preview explicitly
 an installable APK. Production creates the store Android app bundle by default.
 Build profiles share the manifest's project ID. No backend URL is required.
 
+For direct local Gradle builds, increment `expo.android.versionCode` in
+`app.json` above every code already uploaded to Google Play, then run Expo prebuild
+for the selected variant before rebuilding. The production profile's
+`autoIncrement` applies to EAS builds; a direct Gradle build does not use it.
+
 All profiles open the template app and its component pages.
 
 ## Native identity and integrations
@@ -118,26 +123,33 @@ checking OS permission and creating the notification channel. The selected EAS
 project ID comes from Expo configuration; the application ID comes from the
 installed binary. Registration runs while Settings is visible. The field rereads
 on resume and supports manual retry; Expo manages native device-token mapping.
-Startup requests notification permission after launch on iOS and Android if the
-user has not made a choice yet. Previous grants or denials skip the startup prompt.
+Notification permission is checked after launch and each return from the background
+on iOS and Android. Missing permission is requested through the native system dialog
+if the OS permits it. Granted or blocked permission skips the prompt; no custom
+reminder or automatic settings redirect is shown. A system dialog's
+inactive-to-active transition does not repeat it.
 Android also configures foreground presentation; startup does not register a new
 Expo token. Native Expo delivery handles background
 alerts. Notification taps open the app without feature-specific routing; custom
 silent background work is not configured.
 
-### Development topic through Expo
+### Android broadcast topic through Expo
 
-Development Android installs subscribe to `all-testing-maps` with Expo's
-`subscribeToTopicAsync()` after notification permission is granted. The app tries
-after the startup permission request finishes, on returning to the foreground, and during Settings token
-registration. Topic work does not block launch or Expo token display; failures
-are logged and the next registration/resume can retry. Production, preview and
-iOS do not subscribe, and existing installs join when they run the updated app.
+Configured Android development and production installs subscribe to
+`all-testing-maps` with Expo's `subscribeToTopicAsync()` after notification
+permission is granted. The app tries after the startup permission request finishes,
+on returning to the foreground, and during Settings token registration.
+Topic work does not block launch or Expo token display; failures
+are logged and the next registration/resume can retry. Preview has no Firebase
+configuration and iOS does not subscribe. Existing installs join when they run
+the updated app with notification permission granted.
 
 This is an FCM topic managed through the Expo Android API. Send topic messages
-from the development Firebase project (`expo-g-maps`) using Firebase
-Console or a trusted FCM sender. Expo Push Service and its test tool accept Expo
-token recipients rather than topic names. To broadcast through Expo Push Service
+from the matching Firebase project: `expo-g-maps` for development or
+`expo-g-maps-dev` for production. Topics are scoped to each Firebase project;
+sending to the development project's topic does not reach production installs.
+Use Firebase Console or a trusted FCM sender. Expo Push Service and its test tool
+accept Expo token recipients rather than topic names. To broadcast through Expo Push Service
 across Android and iOS, a backend must retain the recipient Expo push tokens.
 No push-token backend contract is configured in this template.
 

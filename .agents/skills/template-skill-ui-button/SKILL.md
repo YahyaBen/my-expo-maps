@@ -72,6 +72,6 @@ Optional common props: `label`, native `children`, `onPress`, `disabled`,
   each need a `Column modifiers={nativeRowWeight}` and a full-width button.
   Omit `fullWidth` for intrinsic sizing; keep existing per-axis Host sizing.
 
-Use the [button examples](../../../src/features/template/button-examples.tsx).
+Use a consuming native screen for manual verification.
 Verify disabled activation, pending recovery, Host overrides, translated/custom
 labels, RTL and native edge taps after geometry changes.

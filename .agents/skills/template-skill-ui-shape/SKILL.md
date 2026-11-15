@@ -18,6 +18,6 @@ Source: [shape/](../../../src/components/ui/shape/).
 - Android's star, pill-star and polygon parameters are outside this shared API.
   Do not silently substitute a different geometry on iOS.
 
-Use the [shape example](../../../src/features/template/component-screen.tsx)
-for geometry, explicit colors, intrinsic sizing and light/dark previews. Inspect
+Use a consuming native screen for geometry, explicit colors, intrinsic sizing
+and light/dark checks. Inspect
 both native renderers, including non-square circle frames and corner radii.

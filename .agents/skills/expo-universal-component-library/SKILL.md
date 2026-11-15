@@ -1,6 +1,6 @@
 ---
 name: expo-universal-component-library
-description: Maintain shared native component architecture, theme tokens and component examples.
+description: Maintain shared native component architecture and theme tokens.
 ---
 
 # Shared component library
@@ -20,9 +20,8 @@ contracts; this skill does not prescribe their props or feature workflows.
 - Use semantic tokens from `src/constants/themes/`. Read
   [theme ownership](references/theme.md) when changing token resolution, a palette
   or inherited native appearance.
-- Add or update the app's native component examples for changed reusable behavior.
-  Use production components, explicit local state and stable selectors on actual
-  controls. Keep example compositions in `src/features/template/`.
+- Verify changed reusable behavior in its consuming native screen with stable
+  selectors on actual controls. The app no longer includes a component catalog.
 - On SDK/UI upgrades, inspect installed types and both platform adapters. Remove
   a workaround only after reproducing its original case on matching native builds.
 

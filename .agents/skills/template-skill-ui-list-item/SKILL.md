@@ -28,4 +28,4 @@ Source: [list-item/](../../../src/components/ui/list-item/).
 
 Use translated text and the owning Host's theme. Check padding-edge taps,
 first/middle/last corners, compound slots, disabled state and RTL on both platforms.
-Use the [list and field-group examples](../../../src/features/template/component-screen.tsx).
+Use a consuming native list or field group for manual verification.

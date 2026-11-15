@@ -48,4 +48,4 @@ Source: [native-fill-width declarations and adapters](../../../src/components/ui
   Set raw HStack/VStack spacing explicitly when zero is intended.
 
 Check direct-child weight, constrained fills, center/end alignment, RTL and large
-text with the [native layout example](../../../src/features/template/component-screen.tsx).
+text in a consuming native screen.

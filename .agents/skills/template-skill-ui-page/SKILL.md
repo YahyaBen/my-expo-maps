@@ -76,6 +76,5 @@ for controls such as maps. Untitled `scroll` frames reserve only the top safe ar
 
 Read [header rendering](references/page-guide.md) when changing blur or
 retained-screen behavior. Check actual native Back round trips,
-safe-area changes, RTL, large text and shield hit testing using
-[app component pages](../../../src/features/template/component-screen.tsx).
+safe-area changes, RTL, large text and shield hit testing in consuming native pages.
 Static checks do not establish native blur or gesture behavior.

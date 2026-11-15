@@ -21,6 +21,7 @@ const brandSchema = z.strictObject({
   presentation: z.strictObject({
     palette: z.enum(['ux', 'system']),
     launch: z.enum(['minimal', 'branded']),
+    launchTitle: z.string().trim().min(1).optional(),
     headingFont: z.string().refine((id) => Object.hasOwn(assets.headingFonts, id)),
     launchArtwork: z.string().refine((id) => Object.hasOwn(assets.launchArtworks, id)),
   }),

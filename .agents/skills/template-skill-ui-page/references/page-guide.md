@@ -39,10 +39,6 @@ Source: [page implementation](../../../../src/components/ui/page/).
 
 ## Decorative screen artwork
 
-Home's [date/time banner](../../../../src/features/home/date-time-banner.tsx) lives
-in its first `PageSection`, below the default header. It scrolls with content
-and owns no header geometry, mask or animation clock.
-
 Keep native blur, title and Back rectangular and outside decorative artwork.
 Any future mask may affect artwork alone; decoration must not change header
 measurements, capture targets or navigation lifecycle. Verify both native platforms
@@ -50,12 +46,10 @@ before adding motion.
 
 ## Content and readiness
 
-- Home, Discover and Settings share the `PageScreen` frame, Host and keyboard
-  avoidance. Settings uses `scrollable={false}` so its native `FieldGroup` owns
-  scrolling, with the header inset in its first section header and raised-dock
-  clearance in its final section footer.
-- Overlay map content keeps the top device inset; shielded header gestures
-  must not reach the map.
+- Settings uses `PageScreen` with `scrollable={false}` so its native `FieldGroup`
+  owns scrolling, with the header inset in its first section header.
+- The full-screen map owns its native controls' device insets and reports layout
+  readiness through `usePageLayout`; it does not mount a page header.
 - PageFrame's performance marker requires layout, focus, active app and completed
   root startup. It means frame-layout readiness; optional data and transitions
   may still be pending. Measurement failures cannot block the frame.

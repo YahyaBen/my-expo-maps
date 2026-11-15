@@ -55,7 +55,7 @@ presentation; the caller owns images, translated labels, data and surrounding la
 - Keep native text/controls around the RN artwork boundary. UI files contain no
   Picsum fixtures, translations, feature state, navigation or public-barrel imports.
 
-Use the [photo examples](../../../src/features/template/photo-examples.tsx) as a
-starting point for native checks. Exercise caller data, sizes, selection callbacks,
+Use a consuming native screen for manual checks. Exercise caller data, sizes,
+selection callbacks,
 replacement/empty/single-item data, large windows, RTL and reduced motion.
 Verify scrolling, spoken selection and resizing on both native platforms.

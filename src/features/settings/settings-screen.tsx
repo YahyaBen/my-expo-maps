@@ -1,5 +1,5 @@
 import { getBrandHeadingFont } from '@/config/brand-assets';
-import { spacing, tabBarRaisedHeight } from '@/constants/layout';
+import { spacing } from '@/constants/layout';
 import { useLanguage } from '@/context/language.context';
 import { useLayoutDirection } from '@/context/layout-direction.context';
 import { useMotionSettings } from '@/context/theme.context';
@@ -27,7 +27,6 @@ import {
   usePageHeaderInset,
 } from '@components/ui';
 import { nativeApplicationVersion, nativeBuildVersion } from 'expo-application';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, useWindowDimensions } from 'react-native';
@@ -49,19 +48,13 @@ const languageKeys: Record<Language, string> = {
 };
 const languageLabel = (language: Language) => i18n.getFixedT(language)(languageKeys[language]);
 
-export default function SettingsScreen({
-  allowAppIconChange = false,
-  tab = false,
-  onBack,
-}: Readonly<{ allowAppIconChange?: boolean; tab?: boolean; onBack?: () => void }>) {
+export default function SettingsScreen({ onBack }: Readonly<{ onBack?: () => void }>) {
   const { language, setLanguage, ready } = useLanguage();
   return (
     <SettingsPage
       language={language}
       onLanguageChange={setLanguage}
       languageReady={ready}
-      allowAppIconChange={allowAppIconChange}
-      tab={tab}
       onBack={onBack}
     />
   );
@@ -72,16 +65,12 @@ function SettingsPage({
   language,
   onLanguageChange,
   languageReady,
-  allowAppIconChange,
   onBack,
-  tab,
 }: Readonly<{
   language: Language;
   onLanguageChange?: (language: Language) => void;
   languageReady: boolean;
-  allowAppIconChange: boolean;
   onBack?: () => void;
-  tab: boolean;
 }>) {
   const { t } = useTranslation();
   const direction = useLayoutDirection();
@@ -121,20 +110,8 @@ function SettingsPage({
       color={colors.muted}
     />
   );
-  // Native section footers keep the final row clear of the shared raised tab action.
-  const tabFooter = tab ? (
-    <FieldGroup.SectionFooter>
-      <Column style={{ height: tabBarRaisedHeight }} testID="app-settings-tab-clearance" />
-    </FieldGroup.SectionFooter>
-  ) : null;
   return (
-    <PageScreen
-      tab={tab}
-      title={t('settings.title')}
-      onBack={onBack}
-      showBack={!!onBack}
-      scrollable={false}
-    >
+    <PageScreen title={t('settings.title')} onBack={onBack} showBack={!!onBack} scrollable={false}>
       <Column spacing={0} modifiers={nativeFillSize} testID="app-settings-viewport">
         <Column spacing={0} modifiers={nativeFillSize} testID="app-settings-content">
           <FieldGroup
@@ -162,17 +139,7 @@ function SettingsPage({
               <SettingsPickerRow label={t('common.colorScheme')} stacked={stackPickers}>
                 <ColorSchemeControl testID="app-settings-color-scheme-picker" />
               </SettingsPickerRow>
-              {allowAppIconChange ? (
-                <ListItem.FieldRow
-                  onPress={() => router.push('/settings/app-icon')}
-                  trailing={chevron}
-                  testID="app-settings-app-icon"
-                >
-                  <Text>{t('settings.appIcon')}</Text>
-                </ListItem.FieldRow>
-              ) : null}
               <ReducedMotionControl />
-              <TabBarAutoHideControl />
               <ListItem.FieldRow
                 testID="app-settings-language"
                 onPress={changeLanguage ? () => setLanguageOpen(true) : undefined}
@@ -314,7 +281,6 @@ function SettingsPage({
                   {t('settings.location.openSettings')}
                 </Text>
               </ListItem.FieldRow>
-              {!updates ? tabFooter : null}
             </FieldGroup.Section>
             {updates ? (
               <FieldGroup.Section
@@ -405,7 +371,6 @@ function SettingsPage({
                     </Text>
                   </ListItem.FieldRow>
                 ) : null}
-                {tabFooter}
               </FieldGroup.Section>
             ) : null}
           </FieldGroup>
@@ -474,26 +439,6 @@ function ReducedMotionControl() {
       modifiers={Platform.OS === 'ios' ? nativeFillWidth : undefined}
       testID="app-settings-reduce-motion"
     />
-  );
-}
-
-function TabBarAutoHideControl() {
-  const { t } = useTranslation();
-  const { tabBarAutoHideEnabled, setTabBarAutoHideEnabled, motionReady } = useMotionSettings();
-  return (
-    <Column spacing={spacing.xs} modifiers={nativeFillWidth}>
-      <Switch
-        label={t('settings.tabBarAutoHide')}
-        value={tabBarAutoHideEnabled}
-        onValueChange={setTabBarAutoHideEnabled}
-        disabled={!motionReady}
-        modifiers={Platform.OS === 'ios' ? nativeFillWidth : undefined}
-        testID="app-settings-tab-bar-auto-hide"
-      />
-      <Text variant="caption" tone="muted">
-        {t('settings.tabBarAutoHideHint')}
-      </Text>
-    </Column>
   );
 }
 

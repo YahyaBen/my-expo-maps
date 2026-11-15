@@ -43,6 +43,26 @@ brand's existing `eas.projectId`. **Increase `expo.version` before making a buil
 with different native code or native configuration.** Builds sharing an app version
 must have compatible native code. An OTA update cannot add native modules.
 
+For local Android Studio/Xcode release builds, `app.config.js` also sets
+`updates.requestHeaders['expo-channel-name']` from `APP_VARIANT`. On EAS, the
+selected build profile's explicit channel takes precedence. Regenerate native
+configuration after changing that header and install a new release binary; an
+OTA cannot add a missing channel header to an existing installation.
+
+For a local Android production build in PowerShell:
+
+```powershell
+$env:APP_BRAND = 'template'
+$env:APP_VARIANT = 'production'
+npx expo prebuild --platform android --no-install --no-clean
+```
+
+Sync Gradle, build a signed **release** APK in Android Studio and install it with
+the same signing key as the existing app. Debug/Metro builds do not exercise the
+app's OTA prompt. To test the popup, publish a fresh compatible OTA after creating
+the release build, then use **Settings → Check for updates**. A change already
+embedded in that build does not prove remote-update delivery.
+
 `updates.checkAutomatically: ON_ERROR_RECOVERY` keeps ordinary checks with the
 post-launch controller and preserves Expo's native recovery checks. The app does
 not wait for the network on its launch screen or restart itself without a tap.

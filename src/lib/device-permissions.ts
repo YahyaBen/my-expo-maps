@@ -19,7 +19,6 @@ export type DevicePermission = {
   granted: boolean;
   canAskAgain: boolean;
 };
-let startupNotificationPermission: Promise<DevicePermission> | undefined;
 
 export async function getDevicePermission(kind: SystemPermission): Promise<DevicePermission> {
   switch (kind) {
@@ -54,17 +53,12 @@ async function requestNotificationPermission() {
   );
 }
 
-/** Ask once after launch, preserving previous choices without opening device settings. */
-export function requestStartupNotificationPermission() {
-  startupNotificationPermission ??= (async () => {
-    const current = notificationPermission(await getPermissionsAsync());
-    if (current.granted || !current.canAskAgain || current.status !== 'undetermined') {
-      return current;
-    }
-    await ensureNotificationChannel();
-    return requestNotificationPermission();
-  })();
-  return startupNotificationPermission;
+/** Read fresh permission on each app entry without automatically opening settings. */
+export async function requestNotificationPermissionOnEntry(): Promise<DevicePermission> {
+  const current = await getDevicePermission('notifications');
+  if (current.granted || !current.canAskAgain) return current;
+  await ensureNotificationChannel();
+  return requestNotificationPermission();
 }
 
 /** Invoke only after a user action, and never request background location. */

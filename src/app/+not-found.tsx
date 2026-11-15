@@ -1,1 +1,5 @@
-export { default } from '@/features/template/not-found-screen';
+import { Redirect } from 'expo-router';
+
+export default function NotFound() {
+  return <Redirect href="/" />;
+}

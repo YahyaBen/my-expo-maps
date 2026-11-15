@@ -34,5 +34,4 @@ The feature owns loading announcements and query states. Preserve cached content
 use explicit error/empty presentation after resolution.
 
 Check shape bounds, theme colors, decorative accessibility, reduced motion and
-background/focus transitions with the
-[skeleton example](../../../src/features/template/component-screen.tsx).
+background/focus transitions in a consuming native screen.

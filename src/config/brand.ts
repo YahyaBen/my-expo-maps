@@ -13,6 +13,7 @@ const publicBrandSchema = z.object({
   pushNotifications: z.boolean().default(false),
   presentation: z.object({
     launch: z.enum(['minimal', 'branded']),
+    launchTitle: z.string().trim().min(1).optional(),
     palette: z.custom<ThemeId>(
       (value) => typeof value === 'string' && Object.hasOwn(themes, value),
     ),

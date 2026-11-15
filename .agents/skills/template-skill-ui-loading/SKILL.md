@@ -63,8 +63,8 @@ Import `LoadingIndicator`, `LoadingIndicatorProps`, `ProgressIndicator` and
 - Native animation needs no JS timer. Mount indicators only while work is active.
   Do not invent elapsed-time completion percentages.
 
-Use the [loading examples](../../../src/features/template/component-screen.tsx)
-for native styles, progress updates, completion and explicit tint. Check actual
+Use a consuming native screen for native styles, progress updates, completion
+and explicit tint. Check actual
 rendering and accessibility separately on iOS and Android.
 
 ## Instance selectors
@@ -75,5 +75,4 @@ Without a prefix, preserve `query-error`, `query-retry`, `query-offline`,
 `query-idle`, `query-empty` and `loading-state`. Selectors must be independent of translations.
 
 Check initial error, cached error, offline/disabled states, pending retry
-suppression and independent activation using the
-[loading examples](../../../src/features/template/component-screen.tsx).
+suppression and independent activation in a consuming native screen.

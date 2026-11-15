@@ -50,8 +50,8 @@ owns presentation on iOS and Android; callers own photo data and translated text
 - Keep helpers within the family. The component has no Picsum fixture, screen
   heading, app navigation, translations or preference persistence.
 
-Use the [photo examples](../../../src/features/template/photo-examples.tsx) as a
-starting point. Exercise custom data/labels/width, callbacks, replacement while expanded, empty
+Use a consuming native screen for manual verification. Exercise custom
+data/labels/width, callbacks, replacement while expanded, empty
 and one-item data, a partial three-column row, full-screen expansion from a narrow
 grid and bounded 200/1,000-item data. Verify the safe-area X before image display,
 native edge taps,

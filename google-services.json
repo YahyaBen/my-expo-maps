@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "23574938129",
-    "project_id": "expo-g-maps-dev",
-    "storage_bucket": "expo-g-maps-dev.firebasestorage.app"
+    "project_number": "857845293248",
+    "project_id": "expo-g-maps",
+    "storage_bucket": "expo-g-maps.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:23574938129:android:683f9eee5dd1b072d7a7b0",
+        "mobilesdk_app_id": "1:857845293248:android:3737039f4f209ace7acd25",
         "android_client_info": {
           "package_name": "com.hyrkul.mapscarburantfr"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD5bIGiB6Y28pVQCCvicDDnqBqmhbOoZGs"
+          "current_key": "AIzaSyAqUyrFPMY7rAQF2mZahI7o8CYqxErfD0M"
         }
       ],
       "services": {

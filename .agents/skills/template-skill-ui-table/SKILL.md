@@ -65,5 +65,4 @@ and Android DropdownMenu semantics. Keep separate interactive boundaries.
 Given a testID, Table derives `-scroll`, `-header`, `-row-{key}`,
 `-row-{key}-cell-{columnId}` and `-empty`. Actions derive `-action-{id}`.
 Check horizontal scrolling, RTL, large text, empty/filter reset, spoken row names
-and disabled menus with the
-[table examples](../../../src/features/template/table-examples.tsx).
+and disabled menus in a consuming native screen.

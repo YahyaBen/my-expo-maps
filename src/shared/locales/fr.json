@@ -1,4 +1,60 @@
 {
+  "map": {
+    "title": "Carte",
+    "accessibilityLabel": "Google Maps. Faites glisser pour déplacer la carte et pincez pour zoomer.",
+    "mode": "Type de carte",
+    "standard": "Plan",
+    "satellite": "Satellite",
+    "centerLocation": "Centrer sur ma position",
+    "locationDisabled": "La localisation est désactivée dans l’application. Activez-la dans les Réglages pour centrer la carte.",
+    "unavailable": "Carte indisponible",
+    "unavailableHint": "Installez une version avec Google Maps activé pour afficher la carte.",
+    "filters": {
+      "open": "Rechercher une station",
+      "title": "Votre recherche",
+      "fuel": "Carburant *",
+      "district": "Département",
+      "municipality": "Commune",
+      "stationType": "Type de station",
+      "brand": "Enseigne",
+      "all": "Tous",
+      "useLocation": "Utiliser ma position",
+      "maxPrice": "Prix max (€/L)",
+      "pricePlaceholder": "Sans limite",
+      "adblue": "Uniquement les stations avec AdBlue",
+      "discounts": "Appliquer mes réductions",
+      "discountAmount": "Ma réduction (c€/L)",
+      "search": "Rechercher",
+      "reset": "Réinitialiser les filtres",
+      "summary_one": "{{fuel}} · {{count}} filtre appliqué",
+      "summary_other": "{{fuel}} · {{count}} filtres appliqués",
+      "fuels": {
+        "diesel": "Gazole",
+        "e10": "SP95-E10",
+        "sp98": "SP98",
+        "e85": "Superéthanol E85",
+        "lpg": "GPL",
+        "offRoadDiesel": "Gazole agricole (coloré)"
+      },
+      "districts": {
+        "paris": "Paris (75)",
+        "rhone": "Rhône (69)",
+        "bouchesDuRhone": "Bouches-du-Rhône (13)"
+      },
+      "municipalities": {
+        "paris": "Paris",
+        "lyon": "Lyon",
+        "villeurbanne": "Villeurbanne",
+        "marseille": "Marseille",
+        "aixEnProvence": "Aix-en-Provence"
+      },
+      "stationTypes": {
+        "supermarket": "Supermarché",
+        "motorway": "Autoroute",
+        "independent": "Indépendante"
+      }
+    }
+  },
   "discover": {
     "title": "Découvrir",
     "eyebrow": "UN MODÈLE D’APPLICATION NATIVE",

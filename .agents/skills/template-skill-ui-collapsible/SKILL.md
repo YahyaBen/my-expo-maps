@@ -27,6 +27,6 @@ before extending usage.
   Column ID or expanded-content ID does not identify the header. Recheck
   upstream support before introducing header-targeted automation.
 
-Use the [collapsible example](../../../src/features/template/component-screen.tsx).
+Use a consuming native screen for manual verification.
 Verify retained drafts, accordion collapse,
 keyboard/focus when hiding edited content, long labels and RTL on devices.

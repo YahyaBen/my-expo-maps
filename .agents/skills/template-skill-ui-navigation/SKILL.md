@@ -56,5 +56,5 @@ semantic active/inactive colors, native selected state and live RTL ordering.
 
 Check selection, disabled action, circle-edge taps, end-of-scroll clearance,
 swipe hide/reveal and reversals, horizontal carousels, native scrolling, keyboard,
-screen readers and device insets using the
-[native template navigation](../../../src/features/template/template-screen.tsx).
+screen readers and device insets in a consuming native screen. The map app
+does not mount the tab dock.

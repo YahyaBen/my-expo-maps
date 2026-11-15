@@ -13,7 +13,8 @@ Source: [launch-screen/](../../../src/components/ui/launch-screen/).
   The root passes the configured brand's `presentation.launch`.
 - Minimal renders native loading without artwork, hold or slide; completion
   requires layout, foreground activity and `exiting`.
-- Branded uses configured name/artwork/fonts, a cancellable two-second
+- Branded uses `presentation.launchTitle` (falling back to the brand name) for
+  visible and accessible text, configured artwork/fonts, a cancellable two-second
   foreground hold from its first native layout, overlapping page preparation,
   followed by a two-second upward slide once the page is ready. Backgrounding pauses the hold
   and cancels at the current offset; resume continues. Guard duplicate completion.

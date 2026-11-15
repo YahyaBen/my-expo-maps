@@ -1,4 +1,64 @@
 {
+  "map": {
+    "title": "الخريطة",
+    "accessibilityLabel": "خرائط Google. اسحب لتحريك الخريطة وباعد بين إصبعيك للتكبير.",
+    "mode": "نوع الخريطة",
+    "standard": "خريطة",
+    "satellite": "قمر صناعي",
+    "centerLocation": "توسيط الخريطة على موقعي",
+    "locationDisabled": "الموقع معطّل في التطبيق. فعّله من الإعدادات لتوسيط الخريطة على موقعك.",
+    "unavailable": "الخريطة غير متاحة",
+    "unavailableHint": "ثبّت إصدارًا يدعم خرائط Google لعرض الخريطة.",
+    "filters": {
+      "open": "ابحث عن محطة",
+      "title": "بحثك",
+      "fuel": "الوقود *",
+      "district": "المقاطعة",
+      "municipality": "البلدية",
+      "stationType": "نوع المحطة",
+      "brand": "العلامة التجارية",
+      "all": "الكل",
+      "useLocation": "استخدام موقعي",
+      "maxPrice": "السعر الأقصى (€/لتر)",
+      "pricePlaceholder": "بدون حد",
+      "adblue": "المحطات التي توفر AdBlue فقط",
+      "discounts": "تطبيق تخفيضاتي",
+      "discountAmount": "تخفيضي (سنت/لتر)",
+      "search": "بحث",
+      "reset": "إعادة ضبط المرشحات",
+      "summary_zero": "{{fuel}} · بدون مرشحات",
+      "summary_one": "{{fuel}} · مرشح واحد مطبّق",
+      "summary_two": "{{fuel}} · مرشحان مطبّقان",
+      "summary_few": "{{fuel}} · {{count}} مرشحات مطبّقة",
+      "summary_many": "{{fuel}} · {{count}} مرشحًا مطبّقًا",
+      "summary_other": "{{fuel}} · {{count}} مرشح مطبّق",
+      "fuels": {
+        "diesel": "ديزل",
+        "e10": "SP95-E10",
+        "sp98": "SP98",
+        "e85": "إيثانول E85",
+        "lpg": "غاز البترول المسال",
+        "offRoadDiesel": "ديزل زراعي (ملوّن)"
+      },
+      "districts": {
+        "paris": "باريس (75)",
+        "rhone": "رون (69)",
+        "bouchesDuRhone": "بوش دو رون (13)"
+      },
+      "municipalities": {
+        "paris": "باريس",
+        "lyon": "ليون",
+        "villeurbanne": "فيلوربان",
+        "marseille": "مرسيليا",
+        "aixEnProvence": "إيكس أون بروفانس"
+      },
+      "stationTypes": {
+        "supermarket": "سوبرماركت",
+        "motorway": "طريق سيار",
+        "independent": "مستقلة"
+      }
+    }
+  },
   "discover": {
     "title": "اكتشف",
     "eyebrow": "قالب لتطبيق أصلي",

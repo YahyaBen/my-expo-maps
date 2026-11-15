@@ -37,7 +37,7 @@ needed for the requested behavior; reuse the existing feature's structure.
   preserve shared native-control and route restrictions. See the
   [enforced boundaries](../../../docs/architecture.md#enforced-import-boundaries).
 
-Run lint, typecheck and formatting checks for edited files. Update native examples
-when reusable behavior changes. There
+Run lint, typecheck and formatting checks for edited files. Verify consuming native
+screens when reusable behavior changes. There
 is no automated service or UI test runner in this checkout. Report native-device
 and live-backend verification separately from static checks.

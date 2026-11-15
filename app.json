@@ -19,6 +19,7 @@
       }
     },
     "android": {
+      "versionCode": 4,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
@@ -75,7 +76,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to show your current location in Settings.",
+          "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to show your current location on the map and in Settings.",
           "locationAlwaysPermission": "Allow $(PRODUCT_NAME) to use your location.",
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location.",
           "motionUsagePermission": "Allow $(PRODUCT_NAME) to detect your current motion activity.",
@@ -83,6 +84,7 @@
         }
       ],
       "@react-native-community/datetimepicker",
+      "./config/with-android-build",
       "./config/with-android-permissions"
     ],
     "experiments": {

@@ -4,11 +4,10 @@ import { getExpoPushTokenAsync, subscribeToTopicAsync } from 'expo-notifications
 import { Platform } from 'react-native';
 import { ensureNotificationChannel, getDevicePermission } from './device-permissions';
 
-/** Join the development Android broadcast topic after OS approval, without prompting. */
-export async function subscribeToDevelopmentPushTopic(): Promise<void> {
+/** Join the configured Firebase project's Android broadcast topic after OS approval. */
+export async function subscribeToPushTopic(): Promise<void> {
   if (Platform.OS !== 'android') return;
-  const brand = getAppBrand();
-  if (!brand.pushNotifications || brand.variant !== 'development') return;
+  if (!getAppBrand().pushNotifications) return;
   if (!(await getDevicePermission('notifications')).granted) return;
   await ensureNotificationChannel();
   await subscribeToTopicAsync('all-testing-maps');
@@ -24,7 +23,7 @@ export async function getExpoPushToken(): Promise<string | null> {
   }
   await ensureNotificationChannel();
   // Topic registration can wait for connectivity without delaying the Expo token field.
-  void subscribeToDevelopmentPushTopic().catch(() => {
+  void subscribeToPushTopic().catch(() => {
     console.warn('[Notifications] Could not join the all-testing-maps topic.');
   });
   const token = await getExpoPushTokenAsync({ projectId });

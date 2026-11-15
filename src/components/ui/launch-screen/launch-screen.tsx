@@ -70,6 +70,7 @@ function BrandedLaunchScreen({ exiting, onReady, onExitComplete }: Readonly<Laun
   const { t } = useTranslation();
   const { language } = useLanguage();
   const brand = getAppBrand();
+  const title = brand.presentation.launchTitle ?? brand.name;
   const version = Constants.expoConfig?.version;
   const headingFont = getBrandHeadingFont(language, brand);
   const scheme = useColorScheme();
@@ -156,7 +157,7 @@ function BrandedLaunchScreen({ exiting, onReady, onExitComplete }: Readonly<Laun
         onReady?.();
       }}
       accessible
-      accessibilityLabel={t('launch.loading', { brandName: brand.name })}
+      accessibilityLabel={t('launch.loading', { brandName: title })}
       pointerEvents="auto"
       style={[
         {
@@ -215,7 +216,7 @@ function BrandedLaunchScreen({ exiting, onReady, onExitComplete }: Readonly<Laun
               textStyle={{ fontFamily: headingFont, fontSize: 28, fontWeight: '900' }}
               testID="app-brand-name"
             >
-              {brand.name}
+              {title}
             </UniversalTextContent>
             <Spacer flexible />
             {version ? (

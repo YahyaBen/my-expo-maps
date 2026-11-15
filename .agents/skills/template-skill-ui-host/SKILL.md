@@ -78,8 +78,8 @@ request centering in native layout.
   native tint. Keep brand color choices in theme tokens, outside Host branches.
 - Pass direction through the Host prop. Leave safe-area ownership to the page.
 
-Check intrinsic/bounded sizes, retained state, touch bounds and RTL using the
-[Host example](../../../src/features/template/component-screen.tsx).
+Check intrinsic/bounded sizes, retained state, touch bounds and RTL in a
+consuming native screen.
 
 ## Verification and performance claims
 

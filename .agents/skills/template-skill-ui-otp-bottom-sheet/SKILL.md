@@ -52,7 +52,6 @@ Source: [otp-bottom-sheet/](../../../src/components/ui/otp-bottom-sheet/).
   respect visibility, activity and reduced motion. Preserve verification/resend
   guards independently; only actual verification acceptance shows success.
 
-The [OTP example](../../../src/features/template/component-screen.tsx)
-uses local simulation: only `123456` succeeds and resend sends no message.
+Use a consuming native verification flow for manual checks.
 Verify reopening, native autofill/keyboard, incomplete/duplicate submissions,
 request failure, cooldown expiry across backgrounding and late completions.

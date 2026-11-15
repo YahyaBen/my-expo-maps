@@ -1,10 +1,10 @@
 # Maps Carburant FR
 
 iOS and Android app using Expo SDK 58, Expo Router and native Expo UI.
-All builds retain the starter's Template page with a native dock and circular component menu. Tap its
-center action to browse components: swiping shows the page name and tapping an
-icon pushes its native example. Shared components and optional service/workflow
-helpers remain available for future features.
+The starting page is a full-screen Google Map with street/satellite selection,
+a current-location action and access to Settings. The template pages and dock
+have been removed. Shared components and optional service/workflow helpers remain
+available for future features.
 
 Keep it simple. Native performance is a primary requirement: load only what the
 active feature needs, preserve idle/motion guards and measure before optimizing.
@@ -19,14 +19,15 @@ npm start
 ```
 
 Install a matching development build first; Expo Go does not contain all the native
-modules. Browse examples through the Components tab and Home tab.
-Demo artwork works offline. No backend or `.env.local` is needed.
+modules. Configure a Google Maps key for each target platform before building;
+see [Google Maps setup](docs/development.md#google-maps-home-screen).
+Map tiles require network access. No application backend is needed.
 
 ```sh
 npm run check              # Typecheck, lint and formatting
 ```
 
-Keep `testID` props on components and interactive examples. This template has no
+Keep `testID` props on components and interactive controls. This template has no
 test runner or test suites.
 
 Edit theme colors directly in [ux.ts](src/constants/themes/ux.ts), component color
@@ -44,8 +45,8 @@ only for local development. The internal brand selector remains `template`.
 
 Production uses `com.hyrkul.mapscarburantfr`; development uses
 `com.hyrkul.mapscarburantfr.dev`, and preview uses
-`com.hyrkul.mapscarburantfr.preview` on both platforms. Existing themes, languages,
-screens, navigation and artwork are retained.
+`com.hyrkul.mapscarburantfr.preview` on both platforms. Existing themes, languages
+and shared UI remain available.
 
 ```sh
 npx eas-cli@latest login
@@ -67,7 +68,7 @@ Identity changes live in the brand manifest; changing an EAS UUID cannot change
 an app's native identity.
 
 Animations, gestures, sheets, launch transitions and reduced-motion handling remain
-available through the shared UI and app component pages. Check native push/Back,
+available through the shared UI. Check native push/Back,
 themes, dark mode and RTL on both platforms. See [EAS setup](docs/eas-development-builds.md).
 
 ## Project guidance

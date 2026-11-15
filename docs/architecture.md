@@ -1,39 +1,26 @@
 # Application architecture
 
-The template has a native dock, a modal component menu, app-facing
-component pages. All build variants start at the Template page through `/`.
-Its center action opens
-the shared native modal sheet with a translated empty state and Close action.
-The menu presenter stays mounted after its first open so native dismissal can finish.
-Component IDs/icons belong to `src/features/template/component-catalog.ts`;
-translated names belong to the locales.
-Unknown URLs use the existing not-found fallback.
+All build variants start at the full-screen Google Map through `/`. Its native
+controls select street/satellite mode, center on the current location and open
+`/settings`. The template, discovery, component demos and tab dock are removed.
+Unknown URLs redirect to `/`.
 
-The Components tab lists categories. Each category opens
-`/components/category/[id]` with its own component list; selecting a component
-keeps the existing `/components/[id]` destination. Category membership and icons
-share the component catalog owner, with names and counts translated in all app
-languages. Native Back returns from a demo to its category, then to the tab.
+Settings uses the existing native page composition and preference owners. Stack
+transitions follow the current LTR/RTL direction and reduced-motion preference;
+Back returns to the retained map with its camera and selected mode. The `index`
+anchor supplies the map beneath a Settings deep link.
 
-Settings remains a retained dock tab. First-level routes enter right to left in
-LTR and left to right in RTL. Routes pushed two or more levels above the template
-shell slide up from the bottom; for example, Components → Controls → Checkbox.
-Depth is counted in the route's owning navigator below Router's wrapper stack.
-The Button demo uses a native page modal: `pageSheet` on iOS and
-`fullScreenModal` on Android, keeping Android's page scroll outside a draggable
-sheet. Reduced motion disables stack animations; Back reverses the destination's
-transition. The existing `index` anchor keeps a base screen behind deep-linked modals.
-
-Home's [date and time banner](../src/features/home/date-time-banner.tsx) belongs to
-the feature's scrollable content, inside its first `PageSection`. It shows the local
-date and 24-hour time in the app language, refreshing each minute while visible and
-active. Shared page components retain ownership of the default rectangular blurred
-header and Back.
+The map uses the configured Google provider on iOS and Android. It reuses
+`useDeviceLocation` for foreground permission checks, app opt-outs, disabled
+services and one-shot position requests. Camera centering waits for map readiness
+and a visible, active page. The native location dot is disabled when hidden or
+inactive. Native map availability is checked before evaluating its JavaScript
+module, allowing older development builds to show a recovery message and Settings.
 
 | Responsibility                          | Owner                                                                           |
 | --------------------------------------- | ------------------------------------------------------------------------------- |
 | Routes and native stack                 | `src/app/`                                                                      |
-| Template shell and component pages      | `src/features/template/`                                                        |
+| Google Maps home and camera controls    | `src/features/map/`                                                             |
 | App settings and native device controls | `src/features/settings/`                                                        |
 | Shared native presentation              | `src/components/ui/`                                                            |
 | Preferences, language and direction     | Existing contexts, hooks and storage owners                                     |
@@ -54,24 +41,24 @@ permission response or store-update check. Reduced motion and activity state
 remain shared native capabilities. Native stack transitions use the existing
 platform options.
 
-After launch, the root requests notification permission on iOS and Android while
-the app is active. It asks once per app session only when permission is undetermined;
-previous grants or denials do not prompt or open device settings. Android creates
-the notification channel before requesting permission.
+After launch, the root checks notification permission on iOS and Android and checks
+again after each background-to-active transition. Missing permission is requested
+through the native system dialog whenever the OS allows another prompt. Granted
+or blocked permission shows no prompt. No custom reminder or automatic settings
+redirect is presented. Returning from a system dialog alone does not repeat the
+request. Android creates the notification channel before requesting permission.
 Android builds with push configured also set Expo's notification presentation
 handler after launch without fetching a token. Settings reads a
 selectable Expo push token while visible after notification permission is granted.
 The app uses `expo-notifications` and Expo Push Service; Expo manages the native
-transport and device-token mapping. Development Android installs also join the
-`all-testing-maps` topic through Expo's topic API after OS permission is granted, on
-launch/resume and during Settings registration. The launch attempt waits for the
+transport and device-token mapping. Configured Android development and production
+installs also join their Firebase project's `all-testing-maps` topic through Expo's
+topic API after OS permission is granted, on launch/resume and during Settings
+registration. The launch attempt waits for the
 permission request to finish. No custom messaging service, receiver or
-JavaScript background task is configured. Template loads Settings
-when its tab first opens, keeping device helpers out of Home module evaluation.
-Discover shows offline editorial content. Component search lives in the
-Components tab. The center component menu uses the shared native modal sheet.
-Retained tab activities keep drafts and selection while cleaning
-up hidden effects. Settings reads permission state while visible, and requests
+JavaScript background task is configured. Settings is a separate route;
+the map does not import its screen or notification controls. Settings reads
+permission state while visible, and requests
 OS access or a one-shot location only after the matching action.
 
 Optional auth/query/service helpers are retained for future features and are not
@@ -99,7 +86,7 @@ rule replacement must preserve the shared restrictions.
 - UI implementations import concrete siblings, avoiding their own public barrel.
 - Auth refresh keeps its raw transport independent of authenticated interceptors and the auth repository.
 
-App-facing component pages use public UI directly. Verify both native graphs
+Feature screens use public UI directly. Verify both native graphs
 after entry/Metro changes to keep developer tooling out of releases.
 
 ## Brand and services

@@ -2,17 +2,15 @@
 
 ## Current scope
 
-The Expo SDK 58 release renders the
-[template screen](../src/features/template/template-screen.tsx), component pages
-and an on-demand Settings feature. Settings native permission/location integrations
-are evaluated when that tab is opened. Optional
-auth/query providers are not mounted by the release root.
+The Expo SDK 58 release opens the [Google Map](../src/features/map/map-screen.tsx)
+and provides a separate Settings route. The demo pages and dock are removed.
+The map reuses the existing foreground-location workflow. Requests are user-initiated;
+the native location dot is enabled only while the map is visible and active with
+permission and device services enabled. Optional auth/query providers are not
+mounted by the release root.
 
-Template retains its ordinary page and Settings in separate React Activities
-after the first Settings visit. Hidden Activities retain state/native views and
-clean up React effects; they do not establish native idle behavior. Settings is
-not prerendered or imported before that first visit. Compare retained memory and
-hidden native work as well as tab-switch frame costs.
+Measure map/Settings navigation, tile rendering, retained map memory and hidden
+native work on matching builds. Source guards do not establish native idle behavior.
 
 The root stack enables [Expo Router Activity](https://docs.expo.dev/router/advanced/react-activity/)
 on iOS and Android. A route hides when two screens are above it, preserving the
@@ -45,19 +43,19 @@ measurements remain pending.
 
 ## Native regression checks
 
-Use app screens and component pages for manual checks. Add representative datasets
+Use consuming app screens for manual checks. Add representative datasets
 to a local development harness when measurements need larger workloads.
 
-| Scenario                      | Check                                                                                                                                                                                                                                        |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Native lists                  | Compare eager scrolling, FlashList and native ListForEach with representative mixed-height multilingual data. Inspect mounted rows, native Host cost, fast-fling gaps and settled memory.                                                    |
-| Theme preferences             | After startup settles, change one preference and inspect committed updates.                                                                                                                                                                  |
-| Native input and OTP examples | Type, reject, reset, paste/autofill and dismiss while pending. Preserve focus, drafts, callbacks, countdown lifetime and duplicate-request guards. Local simulations do not verify a backend.                                                |
-| Settings                      | Reopen, return from system Settings and toggle location. Check permission refresh, retryable writes, request cleanup and language-sheet dismissal.                                                                                           |
-| Template tabs and menu        | Repeat Components/Settings switches after the first visit. Check retained scroll/drafts, header blur restoration and hidden permission/motion work. Capture menu closed, opening, settled open and closed again separately on the same page. |
-| Navigation and activity       | Repeat push/Back and background/resume. Restore blur, touch shielding, drafts and scroll position; pause decorative work while hidden.                                                                                                       |
-| Launch screen                 | Check that preparation overlaps the visible hold without restarting it.                                                                                                                                                                      |
-| Photo components              | Check forward/reverse swipes, snaps, overlapping-card order, resize alignment and source replacement. Exercise later-row expansion, drag/cancel/close and thumbnail return with representative large datasets.                               |
+| Scenario                      | Check                                                                                                                                                                                                          |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Native lists                  | Compare eager scrolling, FlashList and native ListForEach with representative mixed-height multilingual data. Inspect mounted rows, native Host cost, fast-fling gaps and settled memory.                      |
+| Theme preferences             | After startup settles, change one preference and inspect committed updates.                                                                                                                                    |
+| Native input and OTP examples | Type, reject, reset, paste/autofill and dismiss while pending. Preserve focus, drafts, callbacks, countdown lifetime and duplicate-request guards. Local simulations do not verify a backend.                  |
+| Settings                      | Reopen, return from system Settings and toggle location. Check permission refresh, retryable writes, request cleanup and language-sheet dismissal.                                                             |
+| Map and Settings              | Switch street/satellite, request location and repeat Settings/Back. Check retained camera/mode, permission denial, services off, app opt-out, safe-area controls and background/resume location work.          |
+| Navigation and activity       | Repeat push/Back and background/resume. Restore blur, touch shielding, drafts and scroll position; pause decorative work while hidden.                                                                         |
+| Launch screen                 | Check that preparation overlaps the visible hold without restarting it.                                                                                                                                        |
+| Photo components              | Check forward/reverse swipes, snaps, overlapping-card order, resize alignment and source replacement. Exercise later-row expansion, drag/cancel/close and thumbnail return with representative large datasets. |
 
 Repeat affected paths in Arabic/RTL, large text, both appearances and Reduce Motion.
 Check keyboard and safe areas after layout changes. Headers use one rectangular

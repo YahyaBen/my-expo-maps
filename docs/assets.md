@@ -25,11 +25,11 @@ A brand selects them with `presentation.launch: "branded"` and
 `presentation.launchArtwork: "et"`.
 
 The Maps Carburant FR app icons use a fuel pump inside a map pin. The 1024×1024
-PNG artwork in `assets/AppIcon-{Dark,Light,Red}.icon/Assets/icon.png` also supplies
-the Settings picker previews. Native app/adaptive icons and the native splash are
+PNG artwork lives in `assets/AppIcon-{Dark,Light,Red}.icon/Assets/icon.png`.
+Native app/adaptive icons and the native splash are
 separate manifest fields; changing in-app artwork does not update those assets.
 
-The App Icon picker offers Dark, Light and Red. The brand manifest registers
+The App Icon page is removed. The brand manifest retains Dark, Light and Red
 alternate artwork and padded Android foregrounds; `app.config.js` declares the
 Light and Red native resources through `expo-awesome-app-icon`. All three use the
 same EU Reflex Blue (`#003399`) map pin with a white fuel pump. The French flag
@@ -43,13 +43,14 @@ shaded deep red. Android foreground PNGs contain only the emblem on transparency
 padded to keep the visible mark inside the central safe area. Each choice's
 background color is declared in the brand manifest; the alternate colors flow
 through `lightIconBackgroundColor` and `redIconBackgroundColor`.
-The picker only enables choices bundled into the installed native build.
-Apply switches the native launcher icon immediately and checks the installed icon
-before marking it current. An older pending Android selection can be reapplied or
-canceled by applying the installed icon. Some Android launchers may close the app
-or take a moment to refresh after an icon switch.
 Adding an icon requires a new native build and app version under the current
 `appVersion` runtime policy; it cannot be delivered as a launcher icon through OTA.
+
+When switching brands or build variants in a local Android project, select the
+intended `APP_BRAND` and `APP_VARIANT`, then run
+`npx expo prebuild --platform android --no-install --clean` before rebuilding.
+The icon plugin only replaces launcher aliases for the current package; a clean
+prebuild prevents aliases from an earlier variant from creating duplicate icons.
 
 ## Fonts
 

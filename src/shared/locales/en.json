@@ -1,4 +1,60 @@
 {
+  "map": {
+    "title": "Map",
+    "accessibilityLabel": "Google Maps. Drag to move and pinch to zoom.",
+    "mode": "Map mode",
+    "standard": "Street",
+    "satellite": "Satellite",
+    "centerLocation": "Center on my location",
+    "locationDisabled": "Location is disabled in this app. Enable it in Settings to center the map.",
+    "unavailable": "Map unavailable",
+    "unavailableHint": "Install a build with Google Maps enabled to display the map.",
+    "filters": {
+      "open": "Find a station",
+      "title": "Your search",
+      "fuel": "Fuel *",
+      "district": "District",
+      "municipality": "Municipality",
+      "stationType": "Station type",
+      "brand": "Brand",
+      "all": "All",
+      "useLocation": "Use my location",
+      "maxPrice": "Maximum price (€/L)",
+      "pricePlaceholder": "No limit",
+      "adblue": "Only stations with AdBlue",
+      "discounts": "Apply my discounts",
+      "discountAmount": "My discount (cents/L)",
+      "search": "Search",
+      "reset": "Reset filters",
+      "summary_one": "{{fuel}} · {{count}} filter applied",
+      "summary_other": "{{fuel}} · {{count}} filters applied",
+      "fuels": {
+        "diesel": "Diesel",
+        "e10": "SP95-E10",
+        "sp98": "SP98",
+        "e85": "E85 ethanol",
+        "lpg": "LPG",
+        "offRoadDiesel": "Agricultural diesel (dyed)"
+      },
+      "districts": {
+        "paris": "Paris (75)",
+        "rhone": "Rhône (69)",
+        "bouchesDuRhone": "Bouches-du-Rhône (13)"
+      },
+      "municipalities": {
+        "paris": "Paris",
+        "lyon": "Lyon",
+        "villeurbanne": "Villeurbanne",
+        "marseille": "Marseille",
+        "aixEnProvence": "Aix-en-Provence"
+      },
+      "stationTypes": {
+        "supermarket": "Supermarket",
+        "motorway": "Motorway",
+        "independent": "Independent"
+      }
+    }
+  },
   "discover": {
     "title": "Discover",
     "eyebrow": "A NATIVE APP TEMPLATE",
